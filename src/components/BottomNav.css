@@ -1,0 +1,30 @@
+.bottom-nav {
+  height: var(--nav-h);
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  padding: 0;
+}
+
+.nav-tab span {
+  font-size: 10px;
+  font-weight: 500;
+  color: #999;
+  letter-spacing: 0.2px;
+}
+
+.nav-tab--active span {
+  color: #C4614A;
+}

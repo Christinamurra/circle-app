@@ -1,0 +1,204 @@
+.feed-screen {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  flex-shrink: 0;
+}
+
+.feed-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feed-logo__name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark);
+  letter-spacing: -0.3px;
+}
+
+.feed-header__cam {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.feed-body {
+  flex: 1;
+  padding: 0 16px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* Goal banner */
+.goal-banner {
+  border-radius: 20px;
+  overflow: hidden;
+  height: 180px;
+  position: relative;
+}
+
+.goal-banner__content {
+  position: relative;
+  z-index: 1;
+  padding: 20px 22px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.goal-banner__week {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.goal-banner__title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.4px;
+  margin-bottom: 16px;
+}
+
+.goal-banner__btn {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.92);
+  color: var(--dark);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: 24px;
+}
+
+/* Empty feed */
+.feed-empty {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 40px 24px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.feed-empty__icon { margin-bottom: 4px; }
+
+.feed-empty__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.feed-empty__sub {
+  font-size: 14px;
+  color: var(--soft);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.btn-post {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px 28px;
+  border-radius: 30px;
+}
+
+/* Post cards */
+.feed-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-post-card {
+  background: var(--card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.feed-post-card__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+}
+
+.feed-post-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  display: none;
+}
+
+.feed-post-card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.feed-post-card__date {
+  font-size: 12px;
+  color: var(--soft);
+}
+
+.feed-post-card__image {
+  background: #f0ede9;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* FAB */
+.feed-fab {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px 14px;
+  background: linear-gradient(to top, var(--cream) 70%, transparent);
+}
+
+.fab-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px;
+  border-radius: 30px;
+  box-shadow: 0 4px 16px rgba(196,97,74,0.4);
+}

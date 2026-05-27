@@ -1,0 +1,234 @@
+.circle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 12px;
+}
+
+.circle-header__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--dark);
+  letter-spacing: -0.3px;
+}
+
+.circle-header__add {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.circle-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px 32px;
+  gap: 12px;
+}
+
+.circle-icon-wrap {
+  margin-bottom: 16px;
+}
+
+.circle-empty__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dark);
+  text-align: center;
+}
+
+.circle-empty__sub {
+  font-size: 14px;
+  color: var(--soft);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  max-width: 260px;
+}
+
+.circle-btn-create {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 15px;
+  border-radius: 30px;
+  box-shadow: 0 4px 14px rgba(196,97,74,0.3);
+}
+
+.circle-btn-join {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--card);
+  color: var(--dark);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 15px;
+  border-radius: 30px;
+  border: 1.5px solid var(--border);
+}
+
+/* Active circle view */
+.circle-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 32px;
+  gap: 8px;
+}
+
+.circle-active__icon { margin-bottom: 8px; }
+
+.circle-active__name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.circle-active__members {
+  font-size: 14px;
+  color: var(--soft);
+  margin-bottom: 12px;
+}
+
+.circle-invite-box {
+  width: 100%;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 8px;
+}
+
+.circle-invite-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--soft);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.circle-invite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.circle-invite-code {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark);
+  letter-spacing: 3px;
+}
+
+.circle-invite-copy {
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 20px;
+}
+
+.circle-btn-leave {
+  width: 100%;
+  background: none;
+  border: 1.5px solid var(--border);
+  color: var(--soft);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px;
+  border-radius: 30px;
+  margin-top: 8px;
+}
+
+/* Modals */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: flex-end;
+  z-index: 100;
+  border-radius: 44px;
+  overflow: hidden;
+}
+
+.modal {
+  width: 100%;
+  background: var(--cream);
+  border-radius: 28px 28px 0 0;
+  padding: 28px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.modal__sub {
+  font-size: 14px;
+  color: var(--soft);
+  margin-bottom: 4px;
+}
+
+.modal__input {
+  width: 100%;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--dark);
+  outline: none;
+}
+
+.modal__input--upper {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.modal__input:focus { border-color: var(--terracotta); }
+
+.modal__btn-primary {
+  width: 100%;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 15px;
+  border-radius: 30px;
+  margin-top: 4px;
+}
+
+.modal__btn-primary:disabled {
+  opacity: 0.45;
+}
+
+.modal__btn-cancel {
+  width: 100%;
+  background: none;
+  color: var(--soft);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px;
+}
