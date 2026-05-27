@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { db, auth } from '../firebase'
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import './Circle.css'
 
 function randomCode() {
@@ -6,23 +8,72 @@ function randomCode() {
 }
 
 export default function Circle({ circle, setCircle }) {
-  const [modal, setModal] = useState(null) // 'create' | 'join' | null
+  const [modal, setModal] = useState(null)
   const [name, setName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [copied, setCopied] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleCreate = () => {
+  async function handleCreate() {
     if (!name.trim()) return
-    setCircle({ name: name.trim(), code: randomCode(), members: 1 })
-    setModal(null)
-    setName('')
+    setLoading(true)
+    setError('')
+    try {
+      const code = randomCode()
+      const user = auth.currentUser
+      const circleRef = doc(collection(db, 'circles'))
+      await setDoc(circleRef, {
+        name: name.trim(),
+        code,
+        createdBy: user.uid,
+        members: [user.uid],
+        createdAt: new Date()
+      })
+      await setDoc(doc(db, 'users', user.uid), { circleId: circleRef.id }, { merge: true })
+      setModal(null)
+      setName('')
+    } catch (e) {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleJoin = () => {
+  async function handleJoin() {
     if (!joinCode.trim()) return
-    setCircle({ name: 'My Circle', code: joinCode.trim().toUpperCase(), members: 2 })
-    setModal(null)
-    setJoinCode('')
+    setLoading(true)
+    setError('')
+    try {
+      const user = auth.currentUser
+      const code = joinCode.trim().toUpperCase()
+      const q = query(collection(db, 'circles'), where('code', '==', code))
+      const snap = await getDocs(q)
+      if (snap.empty) {
+        setError('Circle not found. Check the code and try again.')
+        return
+      }
+      const circleDoc = snap.docs[0]
+      const members = circleDoc.data().members || []
+      if (!members.includes(user.uid)) {
+        await setDoc(doc(db, 'circles', circleDoc.id), {
+          members: [...members, user.uid]
+        }, { merge: true })
+      }
+      await setDoc(doc(db, 'users', user.uid), { circleId: circleDoc.id }, { merge: true })
+      setModal(null)
+      setJoinCode('')
+    } catch (e) {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleLeave() {
+    if (!confirm('Leave this circle?')) return
+    const user = auth.currentUser
+    await setDoc(doc(db, 'users', user.uid), { circleId: null }, { merge: true })
   }
 
   const handleCopy = () => {
@@ -31,16 +82,12 @@ export default function Circle({ circle, setCircle }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleLeave = () => {
-    if (confirm('Leave this circle?')) setCircle(null)
-  }
-
   return (
     <div className="screen">
       <header className="circle-header">
         <h1 className="circle-header__title">My Circle</h1>
         {circle && (
-          <button className="circle-header__add" onClick={() => alert('Invite sent!')} aria-label="Invite">
+          <button className="circle-header__add" onClick={() => { setModal('invite') }} aria-label="Invite">
             <PlusIcon />
           </button>
         )}
@@ -48,14 +95,12 @@ export default function Circle({ circle, setCircle }) {
 
       {circle ? (
         <div className="circle-active">
-          <div className="circle-active__icon">
-            <CircleFilledIcon />
-          </div>
+          <div className="circle-active__icon"><CircleFilledIcon /></div>
           <h2 className="circle-active__name">{circle.name}</h2>
-          <p className="circle-active__members">{circle.members} member{circle.members !== 1 ? 's' : ''}</p>
+          <p className="circle-active__members">{circle.members?.length || 1} member{(circle.members?.length || 1) !== 1 ? 's' : ''}</p>
 
           <div className="circle-invite-box">
-            <p className="circle-invite-label">Invite code</p>
+            <p className="circle-invite-label">Invite code — share this with friends</p>
             <div className="circle-invite-row">
               <span className="circle-invite-code">{circle.code}</span>
               <button className="circle-invite-copy" onClick={handleCopy}>
@@ -64,27 +109,24 @@ export default function Circle({ circle, setCircle }) {
             </div>
           </div>
 
-          <button className="circle-btn-leave" onClick={handleLeave}>
-            Leave Circle
-          </button>
+          <button className="circle-btn-leave" onClick={handleLeave}>Leave Circle</button>
         </div>
       ) : (
         <div className="circle-body">
           <div className="circle-icon-wrap"><CircleEmptyIcon /></div>
           <h2 className="circle-empty__title">You're not in a circle yet</h2>
-          <p className="circle-empty__sub">Create your own circle or join one with an invite code</p>
-          <button className="circle-btn-create" onClick={() => setModal('create')}>
+          <p className="circle-empty__sub">Create your own or join one with an invite code</p>
+          <button className="circle-btn-create" onClick={() => { setModal('create'); setError('') }}>
             <PersonAddIcon />
             Create a Circle
           </button>
-          <button className="circle-btn-join" onClick={() => setModal('join')}>
+          <button className="circle-btn-join" onClick={() => { setModal('join'); setError('') }}>
             <LinkIcon />
             Join with Invite Code
           </button>
         </div>
       )}
 
-      {/* Create modal */}
       {modal === 'create' && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -98,32 +140,51 @@ export default function Circle({ circle, setCircle }) {
               onKeyDown={e => e.key === 'Enter' && handleCreate()}
               autoFocus
             />
-            <button className="modal__btn-primary" onClick={handleCreate} disabled={!name.trim()}>
-              Create Circle
+            {error && <p className="modal__error">{error}</p>}
+            <button className="modal__btn-primary" onClick={handleCreate} disabled={!name.trim() || loading}>
+              {loading ? 'Creating…' : 'Create Circle'}
             </button>
             <button className="modal__btn-cancel" onClick={() => setModal(null)}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* Join modal */}
       {modal === 'join' && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h3 className="modal__title">Join a Circle</h3>
-            <p className="modal__sub">Enter the invite code</p>
+            <p className="modal__sub">Enter the invite code from your friend</p>
             <input
               className="modal__input modal__input--upper"
               placeholder="e.g. ABC123"
               value={joinCode}
-              onChange={e => setJoinCode(e.target.value)}
+              onChange={e => setJoinCode(e.target.value.toUpperCase())}
               onKeyDown={e => e.key === 'Enter' && handleJoin()}
               autoFocus
             />
-            <button className="modal__btn-primary" onClick={handleJoin} disabled={!joinCode.trim()}>
-              Join Circle
+            {error && <p className="modal__error">{error}</p>}
+            <button className="modal__btn-primary" onClick={handleJoin} disabled={!joinCode.trim() || loading}>
+              {loading ? 'Joining…' : 'Join Circle'}
             </button>
             <button className="modal__btn-cancel" onClick={() => setModal(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {modal === 'invite' && (
+        <div className="modal-overlay" onClick={() => setModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3 className="modal__title">Invite Friends</h3>
+            <p className="modal__sub">Share this code with people you want to add</p>
+            <div className="circle-invite-code-big">{circle.code}</div>
+            <button className="modal__btn-primary" onClick={() => {
+              navigator.clipboard.writeText(circle.code)
+              setCopied(true)
+              setTimeout(() => { setCopied(false); setModal(null) }, 1500)
+            }}>
+              {copied ? '✓ Copied!' : 'Copy Code'}
+            </button>
+            <button className="modal__btn-cancel" onClick={() => setModal(null)}>Done</button>
           </div>
         </div>
       )}

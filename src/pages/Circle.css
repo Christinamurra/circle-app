@@ -232,3 +232,20 @@
   font-weight: 500;
   padding: 10px;
 }
+
+.modal__error {
+  font-size: 13px;
+  color: var(--terracotta);
+  text-align: center;
+}
+
+.circle-invite-code-big {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--dark);
+  text-align: center;
+  padding: 20px;
+  background: var(--card);
+  border-radius: 16px;
+}

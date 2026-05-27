@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
-import { todayStr } from '../utils/storage'
+import { auth } from '../firebase'
+import { signOut } from 'firebase/auth'
 import './Profile.css'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -13,7 +14,7 @@ function buildCalendar(year, month) {
   return cells
 }
 
-export default function Profile({ avatar, setAvatar, posts = [], onAddPost }) {
+export default function Profile({ avatar, setAvatar, posts = [], onAddPost, user }) {
   const today = new Date()
   const [calYear, setCalYear] = useState(today.getFullYear())
   const [calMonth, setCalMonth] = useState(today.getMonth())
@@ -88,7 +89,7 @@ export default function Profile({ avatar, setAvatar, posts = [], onAddPost }) {
           <CircleLogoIcon />
           <span className="profile-logo__name">Circle</span>
         </div>
-        <button className="profile-logout" aria-label="Log out">
+        <button className="profile-logout" aria-label="Log out" onClick={() => signOut(auth)}>
           <LogoutIcon />
         </button>
       </header>
@@ -101,9 +102,8 @@ export default function Profile({ avatar, setAvatar, posts = [], onAddPost }) {
           }
           <div className="profile-avatar__cam"><CamTinyIcon /></div>
         </button>
-        <p className="profile-load-msg">
-          {avatar ? 'Tap to change photo' : 'Tap to add a photo'}
-        </p>
+        <p className="profile-name">{user?.displayName || 'Your Name'}</p>
+        <p className="profile-load-msg">{user?.email}</p>
         <input
           ref={fileInputRef}
           type="file"

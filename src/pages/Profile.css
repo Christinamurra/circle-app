@@ -73,6 +73,12 @@
   border: 2px solid var(--cream);
 }
 
+.profile-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
 .profile-load-msg {
   font-size: 13px;
   color: var(--soft);
