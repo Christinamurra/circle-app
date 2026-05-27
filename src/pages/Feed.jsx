@@ -1,23 +1,35 @@
 import { useState } from 'react'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
+import { storage, auth } from '../firebase'
+import { ref, uploadString, getDownloadURL } from 'firebase/storage'
 import LeafBanner from '../components/LeafBanner'
 import './Feed.css'
 
 export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   async function handlePostUpdate() {
     try {
       const photo = await Camera.getPhoto({
-        quality: 85,
+        quality: 80,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt,
       })
-      onAddPost(photo.dataUrl)
-    } catch {
-      // user cancelled
+      setUploading(true)
+      const uid = auth.currentUser?.uid
+      const photoRef = ref(storage, `posts/${uid}/${Date.now()}.jpg`)
+      await uploadString(photoRef, photo.dataUrl, 'data_url')
+      const url = await getDownloadURL(photoRef)
+      await onAddPost(url)
+    } catch (e) {
+      if (e?.message !== 'User cancelled photos app') {
+        console.error(e)
+      }
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -86,9 +98,9 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
       </div>
 
       <div className="feed-fab">
-        <button className="fab-btn" onClick={handlePostUpdate}>
+        <button className="fab-btn" onClick={handlePostUpdate} disabled={uploading}>
           <CameraSmallIcon color="#fff" />
-          Post an update
+          {uploading ? 'Uploading…' : 'Post an update'}
         </button>
       </div>
 

@@ -47,5 +47,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Circle uses your camera to capture and share progress updates with your circle.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Circle uses your photo library to share progress updates with your circle.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Circle saves your progress photos to your photo library.</string>
 </dict>
 </plist>
