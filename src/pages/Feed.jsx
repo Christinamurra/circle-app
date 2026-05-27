@@ -1,7 +1,34 @@
+import { useState } from 'react'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import LeafBanner from '../components/LeafBanner'
 import './Feed.css'
 
-export default function Feed({ posts = [], onAddPost }) {
+export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
+  const [showGoalModal, setShowGoalModal] = useState(false)
+  const [goalInput, setGoalInput] = useState('')
+
+  async function handlePostUpdate() {
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 85,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+      })
+      onAddPost(photo.dataUrl)
+    } catch {
+      // user cancelled
+    }
+  }
+
+  function saveGoal() {
+    const trimmed = goalInput.trim()
+    if (!trimmed) return
+    setGoal(trimmed)
+    setGoalInput('')
+    setShowGoalModal(false)
+  }
+
   return (
     <div className="screen feed-screen">
       <header className="feed-header">
@@ -9,7 +36,7 @@ export default function Feed({ posts = [], onAddPost }) {
           <CircleLogoIcon />
           <span className="feed-logo__name">Circle</span>
         </div>
-        <button className="feed-header__cam" aria-label="Open camera" onClick={onAddPost}>
+        <button className="feed-header__cam" aria-label="Open camera" onClick={handlePostUpdate}>
           <CameraIcon />
         </button>
       </header>
@@ -19,8 +46,13 @@ export default function Feed({ posts = [], onAddPost }) {
           <LeafBanner height={180} />
           <div className="goal-banner__content">
             <span className="goal-banner__week">THIS WEEK</span>
-            <h2 className="goal-banner__title">No goal set yet</h2>
-            <button className="goal-banner__btn">Set a Goal</button>
+            <h2 className="goal-banner__title">{goal || 'No goal set yet'}</h2>
+            <button
+              className="goal-banner__btn"
+              onClick={() => { setGoalInput(goal || ''); setShowGoalModal(true) }}
+            >
+              {goal ? 'Edit Goal' : 'Set a Goal'}
+            </button>
           </div>
         </div>
 
@@ -29,8 +61,8 @@ export default function Feed({ posts = [], onAddPost }) {
             <div className="feed-empty__icon"><ImagePlaceholderIcon /></div>
             <h3 className="feed-empty__title">No posts yet</h3>
             <p className="feed-empty__sub">Be the first to share progress on the team goal.</p>
-            <button className="btn-post" onClick={onAddPost}>
-              <CameraSmallIcon />
+            <button className="btn-post" onClick={handlePostUpdate}>
+              <CameraSmallIcon color="#C4614A" />
               Post an update
             </button>
           </div>
@@ -38,14 +70,15 @@ export default function Feed({ posts = [], onAddPost }) {
           <div className="feed-posts">
             {[...posts].reverse().map(post => (
               <div key={post.id} className="feed-post-card">
-                <div className="feed-post-card__avatar"><span>You</span></div>
                 <div className="feed-post-card__info">
                   <span className="feed-post-card__name">You</span>
                   <span className="feed-post-card__date">{formatDate(post.date)}</span>
                 </div>
-                <div className="feed-post-card__image">
-                  <ImagePlaceholderIcon />
-                </div>
+                {post.photo ? (
+                  <img src={post.photo} alt="post" className="feed-post-card__photo" />
+                ) : (
+                  <div className="feed-post-card__image"><ImagePlaceholderIcon /></div>
+                )}
               </div>
             ))}
           </div>
@@ -53,11 +86,38 @@ export default function Feed({ posts = [], onAddPost }) {
       </div>
 
       <div className="feed-fab">
-        <button className="fab-btn" onClick={onAddPost}>
+        <button className="fab-btn" onClick={handlePostUpdate}>
           <CameraSmallIcon color="#fff" />
           Post an update
         </button>
       </div>
+
+      {showGoalModal && (
+        <>
+          <div className="modal-overlay" onClick={() => setShowGoalModal(false)} />
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            <h3 className="modal-title">Set This Week's Goal</h3>
+            <p className="modal-sub">What does your circle want to achieve this week?</p>
+            <textarea
+              className="goal-input"
+              placeholder="e.g. Work out 3 times this week"
+              value={goalInput}
+              onChange={e => setGoalInput(e.target.value)}
+              rows={3}
+              autoFocus
+            />
+            <button className="modal-btn modal-btn--primary" onClick={saveGoal}>
+              Save Goal
+            </button>
+            {goal && (
+              <button className="modal-btn modal-btn--ghost" onClick={() => { setGoal(null); setShowGoalModal(false) }}>
+                Clear Goal
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }

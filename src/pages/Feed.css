@@ -178,6 +178,13 @@
   justify-content: center;
 }
 
+.feed-post-card__photo {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
 /* FAB */
 .feed-fab {
   position: absolute;
@@ -201,4 +208,85 @@
   padding: 16px;
   border-radius: 30px;
   box-shadow: 0 4px 16px rgba(196,97,74,0.4);
+}
+
+/* Goal modal */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 50;
+}
+
+.modal-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--cream);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 24px 36px;
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #ccc;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.modal-sub {
+  font-size: 14px;
+  color: var(--soft);
+  line-height: 1.4;
+  margin-top: -4px;
+}
+
+.goal-input {
+  width: 100%;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--dark);
+  resize: none;
+  outline: none;
+}
+
+.goal-input:focus {
+  border-color: var(--terracotta);
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-btn--primary {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+.modal-btn--ghost {
+  background: none;
+  color: var(--soft);
+  font-size: 14px;
+  padding: 8px;
 }

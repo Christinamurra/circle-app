@@ -12,6 +12,12 @@ export default function App() {
   const [posts, setPosts] = useState(() => load('circle_posts', []))
   const [circle, setCircle] = useState(() => load('circle_group', null))
   const [avatar, setAvatar] = useState(() => localStorage.getItem('circle_avatar') || null)
+  const [goal, setGoal] = useState(() => {
+    const saved = load('circle_goal', null)
+    if (!saved) return null
+    const weekStart = getWeekStart()
+    return saved.week === weekStart ? saved.text : null
+  })
 
   useEffect(() => { save('circle_posts', posts) }, [posts])
   useEffect(() => { save('circle_group', circle) }, [circle])
@@ -19,12 +25,14 @@ export default function App() {
     if (avatar) localStorage.setItem('circle_avatar', avatar)
     else localStorage.removeItem('circle_avatar')
   }, [avatar])
+  useEffect(() => {
+    if (goal) save('circle_goal', { text: goal, week: getWeekStart() })
+    else localStorage.removeItem('circle_goal')
+  }, [goal])
 
-  const addPost = () => {
+  const addPost = (photo = null) => {
     const today = todayStr()
-    if (!posts.find(p => p.date === today)) {
-      setPosts(prev => [...prev, { date: today, id: Date.now() }])
-    }
+    setPosts(prev => [...prev, { date: today, id: Date.now(), photo }])
     setTab('feed')
   }
 
@@ -41,8 +49,18 @@ export default function App() {
         avatar={avatar}
         setAvatar={setAvatar}
         onAddPost={addPost}
+        goal={goal}
+        setGoal={setGoal}
       />
       <BottomNav active={tab} onNavigate={setTab} />
     </div>
   )
+}
+
+function getWeekStart() {
+  const d = new Date()
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+  const monday = new Date(d.setDate(diff))
+  return monday.toISOString().slice(0, 10)
 }

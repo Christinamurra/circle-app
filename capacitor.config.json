@@ -1,0 +1,17 @@
+{
+  "appId": "com.christinamurra.circle",
+  "appName": "Circle",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#F2EDE7",
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#F2EDE7",
+      "showSpinner": false
+    }
+  }
+}
