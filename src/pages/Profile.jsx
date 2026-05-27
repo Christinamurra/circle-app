@@ -96,8 +96,8 @@ export default function Profile({ avatar, setAvatar, posts = [], onAddPost, user
 
       <div className="profile-avatar-wrap">
         <button className="profile-avatar" onClick={handleAvatarClick} aria-label="Change profile photo">
-          {avatar
-            ? <img src={avatar} alt="Profile" className="profile-avatar__img" />
+          {(avatar || user?.photoURL)
+            ? <img src={avatar || user?.photoURL} alt="Profile" className="profile-avatar__img" />
             : <QuestionMark />
           }
           <div className="profile-avatar__cam"><CamTinyIcon /></div>

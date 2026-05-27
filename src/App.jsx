@@ -112,7 +112,21 @@ export default function App() {
   }
 
   if (!user) {
-    return <div className="app-shell"><SignIn /></div>
+    return (
+      <div className="app-shell">
+        <SignIn />
+        {import.meta.env.DEV && (
+          <button
+            onClick={() => {
+              setUser({ uid: 'dev', displayName: 'Christina', email: 'christina@gmail.com', photoURL: null })
+            }}
+            style={{ position: 'fixed', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: '#333', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 12, zIndex: 999 }}
+          >
+            Skip sign in (dev only)
+          </button>
+        )}
+      </div>
+    )
   }
 
   const screens = { home: Home, feed: Feed, circle: Circle, profile: Profile }
@@ -125,7 +139,7 @@ export default function App() {
         posts={posts}
         circle={circle}
         setCircle={setCircle}
-        avatar={user.photoURL}
+        avatar={user?.photoURL}
         user={user}
         onAddPost={addPost}
         goal={goal}

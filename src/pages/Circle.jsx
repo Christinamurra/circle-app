@@ -7,7 +7,13 @@ function randomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
 }
 
-export default function Circle({ circle, setCircle }) {
+const MOCK_MEMBERS = [
+  { uid: 'u2', name: 'Jess', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80' },
+  { uid: 'u3', name: 'Marcus', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80' },
+  { uid: 'u4', name: 'Priya', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80' },
+]
+
+export default function Circle({ circle, setCircle, user }) {
   const [modal, setModal] = useState(null)
   const [name, setName] = useState('')
   const [joinCode, setJoinCode] = useState('')
@@ -95,12 +101,39 @@ export default function Circle({ circle, setCircle }) {
 
       {circle ? (
         <div className="circle-active">
-          <div className="circle-active__icon"><CircleFilledIcon /></div>
-          <h2 className="circle-active__name">{circle.name}</h2>
-          <p className="circle-active__members">{circle.members?.length || 1} member{(circle.members?.length || 1) !== 1 ? 's' : ''}</p>
+          <div className="circle-team-section">
+            <div className="circle-team-header">
+              <span className="circle-team-title">Your Team</span>
+              <button className="circle-team-add" onClick={() => setModal('invite')}><PlusIcon /></button>
+            </div>
+            <div className="circle-team-members">
+              {user && (
+                <div className="circle-member">
+                  <div className="circle-member__avatar circle-member__avatar--you">
+                    <span>You</span>
+                  </div>
+                  <span className="circle-member__name">{user.displayName?.split(' ')[0] || 'You'}</span>
+                </div>
+              )}
+              {MOCK_MEMBERS.slice(0, (circle.members?.length || 1) - 1).map(m => (
+                <div key={m.uid} className="circle-member">
+                  <div className="circle-member__avatar">
+                    <img src={m.photo} alt={m.name} />
+                  </div>
+                  <span className="circle-member__name">{m.name}</span>
+                </div>
+              ))}
+              <button className="circle-member circle-member--add" onClick={() => setModal('invite')}>
+                <div className="circle-member__avatar circle-member__avatar--plus">
+                  <PlusIcon />
+                </div>
+                <span className="circle-member__name">Invite</span>
+              </button>
+            </div>
+          </div>
 
           <div className="circle-invite-box">
-            <p className="circle-invite-label">Invite code — share this with friends</p>
+            <p className="circle-invite-label">Invite code — share with friends</p>
             <div className="circle-invite-row">
               <span className="circle-invite-code">{circle.code}</span>
               <button className="circle-invite-copy" onClick={handleCopy}>
