@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti'
 import LeafBanner from '../components/LeafBanner'
 import './Feed.css'
 
-export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate, user }) {
+export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate, user, deletePost }) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -162,7 +162,17 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
                       <div className="feed-post-card__avatar-dot" style={{ background: post.userId === user?.uid ? '#C4614A' : '#888' }} />
                       <span className="feed-post-card__name">{post.userName || 'You'}</span>
                     </div>
-                    <span className="feed-post-card__date">{formatDate(post.date)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="feed-post-card__date">{formatDate(post.date)}</span>
+                      {post.userId === user?.uid && (
+                        <button
+                          onClick={() => { if (window.confirm('Delete this post?')) deletePost(post) }}
+                          style={{ background: 'none', padding: 4, color: '#bbb' }}
+                        >
+                          <TrashIcon />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {post.photo ? (
@@ -294,6 +304,17 @@ function CommentIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4h6v2" />
     </svg>
   )
 }

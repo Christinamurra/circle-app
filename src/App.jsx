@@ -108,6 +108,11 @@ export default function App() {
     setTab('feed')
   }
 
+  async function deletePost(post) {
+    if (!user || post.userId !== user.uid) return
+    await deleteDoc(doc(db, 'posts', post.id))
+  }
+
   async function setCircle(data) {
     if (!user) return
     if (!data) {
@@ -191,6 +196,7 @@ export default function App() {
         dismissNudge={dismissNudge}
         sendNudge={sendNudge}
         members={members}
+        deletePost={deletePost}
       />
       <BottomNav active={tab} onNavigate={setTab} />
     </div>
