@@ -205,6 +205,18 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [] 
                 {copied ? '✓ Copied' : 'Copy'}
               </button>
             </div>
+            <button className="circle-share-btn" onClick={() => {
+              const msg = `Join my circle "${circle.name}" on Circle — the accountability app! 💪\n\nDownload here: https://apps.apple.com/app/id6746823801\n\nUse code ${circle.code} to join my circle once you're in.`
+              if (navigator.share) {
+                navigator.share({ text: msg })
+              } else {
+                navigator.clipboard.writeText(msg)
+                alert('Invite message copied to clipboard!')
+              }
+            }}>
+              <ShareIcon />
+              Invite Friends
+            </button>
           </div>
 
           <button className="circle-btn-leave" onClick={handleLeave}>Leave Circle</button>
@@ -309,6 +321,16 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [] 
         </div>
       )}
     </div>
+  )
+}
+
+function ShareIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
   )
 }
 
