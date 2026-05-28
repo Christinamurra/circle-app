@@ -18,6 +18,72 @@
   letter-spacing: -0.3px;
 }
 
+.circle-motivation-banner {
+  margin: 0 16px;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 140px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.circle-motivation-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.25);
+}
+
+.circle-motivation-quote {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: -0.3px;
+  padding: 0 24px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.circle-bottom {
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.circle-code-small {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.circle-code-small__label {
+  font-size: 12px;
+  color: var(--soft);
+  font-weight: 500;
+}
+
+.circle-code-small__value {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+  letter-spacing: 1px;
+}
+
+.circle-code-small__copy {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--terracotta);
+  background: none;
+}
+
 .circle-share-btn {
   width: 100%;
   margin-top: 12px;

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { db, auth } from '../firebase'
 import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore'
+import LeafBanner from '../components/LeafBanner'
 import './Circle.css'
 
 function randomCode() {
@@ -197,11 +198,18 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [] 
             </div>
           </div>
 
-          <div className="circle-invite-box">
-            <p className="circle-invite-label">Invite code — share with friends</p>
-            <div className="circle-invite-row">
-              <span className="circle-invite-code">{circle.code}</span>
-              <button className="circle-invite-copy" onClick={handleCopy}>
+          <div className="circle-motivation-banner">
+            <LeafBanner height={140} />
+            <div className="circle-motivation-content">
+              <p className="circle-motivation-quote">Show up for your circle. 💪</p>
+            </div>
+          </div>
+
+          <div className="circle-bottom">
+            <div className="circle-code-small">
+              <span className="circle-code-small__label">Invite code</span>
+              <span className="circle-code-small__value">{circle.code}</span>
+              <button className="circle-code-small__copy" onClick={handleCopy}>
                 {copied ? '✓ Copied' : 'Copy'}
               </button>
             </div>
@@ -215,8 +223,9 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [] 
               }
             }}>
               <ShareIcon />
-              Invite Friends
+              Invite Friends to Circle
             </button>
+            <button className="circle-btn-leave" onClick={handleLeave}>Leave Circle</button>
           </div>
 
           <button className="circle-btn-leave" onClick={handleLeave}>Leave Circle</button>
