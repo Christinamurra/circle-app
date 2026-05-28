@@ -5,11 +5,87 @@
   padding: 20px 20px 12px;
 }
 
+.circle-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .circle-header__title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--dark);
   letter-spacing: -0.3px;
+}
+
+.circle-rename-btn {
+  font-size: 12px;
+  color: var(--terracotta);
+  background: none;
+  padding: 0;
+  font-weight: 500;
+}
+
+.circle-this-week {
+  background: var(--card);
+  border-radius: 16px;
+  margin: 0 16px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.circle-this-week__title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--soft);
+  margin-bottom: 12px;
+}
+
+.circle-week-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.circle-week-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.circle-week-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.circle-week-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  flex: 1;
+}
+
+.circle-week-status {
+  font-size: 12px;
+  color: var(--soft);
+}
+
+.circle-week-status--done {
+  color: var(--terracotta);
+  font-weight: 600;
+}
+
+.circle-nudge-btn {
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark);
 }
 
 .circle-header__add {

@@ -150,6 +150,19 @@
   padding: 12px 14px 8px;
 }
 
+.feed-post-card__author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feed-post-card__avatar-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .feed-post-card__avatar {
   width: 36px;
   height: 36px;
@@ -182,6 +195,82 @@
   height: 280px;
   object-fit: cover;
   display: block;
+}
+
+/* Likes & Comments */
+.feed-post-card__actions {
+  display: flex;
+  gap: 16px;
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  color: #888;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0;
+}
+
+.action-btn--liked span { color: #C4614A; }
+
+.feed-comments {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.feed-comment {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.feed-comment__name {
+  font-weight: 600;
+  color: var(--dark);
+  flex-shrink: 0;
+}
+
+.feed-comment__text { color: var(--mid); }
+
+.feed-comment-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.feed-comment-input {
+  flex: 1;
+  background: var(--border);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--dark);
+  outline: none;
+}
+
+.feed-comment-send {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* FAB */

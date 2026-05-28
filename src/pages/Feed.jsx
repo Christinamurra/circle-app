@@ -1,14 +1,18 @@
 import { useState, useRef } from 'react'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
-import { storage, auth } from '../firebase'
+import { storage, auth, db } from '../firebase'
 import { ref, uploadString, getDownloadURL } from 'firebase/storage'
+import { doc, updateDoc } from 'firebase/firestore'
+import confetti from 'canvas-confetti'
 import LeafBanner from '../components/LeafBanner'
 import './Feed.css'
 
-export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate }) {
+export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate, user }) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [expandedComments, setExpandedComments] = useState({})
+  const [commentInputs, setCommentInputs] = useState({})
   const fileInputRef = useRef(null)
 
   async function uploadDataUrl(dataUrl) {
@@ -19,6 +23,12 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
       await uploadString(photoRef, dataUrl, 'data_url')
       const url = await getDownloadURL(photoRef)
       await onAddPost(url)
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#C4614A', '#F2EDE7', '#D4745E', '#ffffff', '#ffcc00'],
+      })
     } catch (e) {
       console.error(e)
     } finally {
@@ -36,15 +46,9 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
   }
 
   async function handlePostUpdate() {
-    if (!circle?.id) {
-      onNavigate('circle')
-      return
-    }
+    if (!circle?.id) { onNavigate('circle'); return }
     const isTouchDevice = navigator.maxTouchPoints > 0
-    if (!isTouchDevice) {
-      fileInputRef.current?.click()
-      return
-    }
+    if (!isTouchDevice) { fileInputRef.current?.click(); return }
     try {
       const photo = await Camera.getPhoto({
         quality: 80,
@@ -64,6 +68,33 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
     }
   }
 
+  async function toggleLike(post) {
+    if (!user) return
+    const uid = user.uid
+    const likes = post.likes || []
+    const already = likes.includes(uid)
+    if (post._mock) return // skip Firebase for mock posts
+    await updateDoc(doc(db, 'posts', post.id), {
+      likes: already ? likes.filter(id => id !== uid) : [...likes, uid]
+    })
+  }
+
+  async function submitComment(post) {
+    const text = (commentInputs[post.id] || '').trim()
+    if (!text || !user) return
+    const comments = post.comments || []
+    if (post._mock) return
+    await updateDoc(doc(db, 'posts', post.id), {
+      comments: [...comments, {
+        uid: user.uid,
+        name: user.displayName || 'You',
+        text,
+        createdAt: new Date().toISOString()
+      }]
+    })
+    setCommentInputs(prev => ({ ...prev, [post.id]: '' }))
+  }
+
   function saveGoal() {
     const trimmed = goalInput.trim()
     if (!trimmed) return
@@ -72,15 +103,12 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
     setShowGoalModal(false)
   }
 
+  const allPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
   return (
     <div className="screen feed-screen">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={handleFileInput}
-      />
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileInput} />
+
       <header className="feed-header">
         <div className="feed-logo">
           <CircleLogoIcon />
@@ -110,7 +138,7 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
           </div>
         </div>
 
-        {posts.length === 0 ? (
+        {allPosts.length === 0 ? (
           <div className="feed-empty">
             <div className="feed-empty__icon"><ImagePlaceholderIcon /></div>
             <h3 className="feed-empty__title">No posts yet</h3>
@@ -122,19 +150,67 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
           </div>
         ) : (
           <div className="feed-posts">
-            {[...posts].reverse().map(post => (
-              <div key={post.id} className="feed-post-card">
-                <div className="feed-post-card__info">
-                  <span className="feed-post-card__name">You</span>
-                  <span className="feed-post-card__date">{formatDate(post.date)}</span>
+            {allPosts.map(post => {
+              const likes = post.likes || []
+              const comments = post.comments || []
+              const liked = user && likes.includes(user.uid)
+              const showComments = expandedComments[post.id]
+              return (
+                <div key={post.id} className="feed-post-card">
+                  <div className="feed-post-card__info">
+                    <div className="feed-post-card__author">
+                      <div className="feed-post-card__avatar-dot" style={{ background: post.userId === user?.uid ? '#C4614A' : '#888' }} />
+                      <span className="feed-post-card__name">{post.userName || 'You'}</span>
+                    </div>
+                    <span className="feed-post-card__date">{formatDate(post.date)}</span>
+                  </div>
+
+                  {post.photo ? (
+                    <img src={post.photo} alt="post" className="feed-post-card__photo" />
+                  ) : (
+                    <div className="feed-post-card__image"><ImagePlaceholderIcon /></div>
+                  )}
+
+                  <div className="feed-post-card__actions">
+                    <button
+                      className={`action-btn ${liked ? 'action-btn--liked' : ''}`}
+                      onClick={() => toggleLike(post)}
+                    >
+                      <HeartIcon filled={liked} />
+                      <span>{likes.length > 0 ? likes.length : ''}</span>
+                    </button>
+                    <button
+                      className="action-btn"
+                      onClick={() => setExpandedComments(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
+                    >
+                      <CommentIcon />
+                      <span>{comments.length > 0 ? comments.length : ''}</span>
+                    </button>
+                  </div>
+
+                  {showComments && (
+                    <div className="feed-comments">
+                      {comments.map((c, i) => (
+                        <div key={i} className="feed-comment">
+                          <span className="feed-comment__name">{c.name}</span>
+                          <span className="feed-comment__text">{c.text}</span>
+                        </div>
+                      ))}
+                      <div className="feed-comment-input-row">
+                        <input
+                          className="feed-comment-input"
+                          placeholder="Add a comment…"
+                          value={commentInputs[post.id] || ''}
+                          onChange={e => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                          onKeyDown={e => e.key === 'Enter' && submitComment(post)}
+                        />
+                        <button className="feed-comment-send" onClick={() => submitComment(post)}>↑</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {post.photo ? (
-                  <img src={post.photo} alt="post" className="feed-post-card__photo" />
-                ) : (
-                  <div className="feed-post-card__image"><ImagePlaceholderIcon /></div>
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -161,9 +237,7 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
               rows={3}
               autoFocus
             />
-            <button className="modal-btn modal-btn--primary" onClick={saveGoal}>
-              Save Goal
-            </button>
+            <button className="modal-btn modal-btn--primary" onClick={saveGoal}>Save Goal</button>
             {goal && (
               <button className="modal-btn modal-btn--ghost" onClick={() => { setGoal(null); setShowGoalModal(false) }}>
                 Clear Goal
@@ -204,6 +278,22 @@ function CameraSmallIcon({ color = '#fff' }) {
     <svg width="18" height="16" viewBox="0 0 22 20" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 6.5C1 5.4 1.9 4.5 3 4.5H5L7 2h8l2 2.5h2c1.1 0 2 .9 2 2V16c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V6.5Z" />
       <circle cx="11" cy="11" r="3.2" />
+    </svg>
+  )
+}
+
+function HeartIcon({ filled }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? '#C4614A' : 'none'} stroke={filled ? '#C4614A' : '#888'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
+
+function CommentIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   )
 }

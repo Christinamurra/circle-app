@@ -3,7 +3,7 @@ import { auth, db } from './firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import {
   doc, collection, onSnapshot, addDoc, setDoc,
-  deleteDoc, query, where, orderBy, getDoc, getDocs, updateDoc
+  deleteDoc, query, where, orderBy, getDoc, getDocs, updateDoc, arrayUnion
 } from 'firebase/firestore'
 import Home from './pages/Home'
 import Feed from './pages/Feed'
@@ -20,6 +20,7 @@ export default function App() {
   const [circle, setCircleState] = useState(null)
   const [goal, setGoalState] = useState(null)
   const [localAvatar, setLocalAvatar] = useState(null)
+  const [nudge, setNudge] = useState(null)
 
   // Auth listener
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function App() {
     return () => { clearTimeout(timeout); unsub() }
   }, [])
 
-  // Load circle membership
+  // Load circle membership + nudges
   useEffect(() => {
     if (!user) return
     const ref = doc(db, 'users', user.uid)
@@ -45,6 +46,8 @@ export default function App() {
       } else {
         setCircleState(null)
       }
+      if (data?.nudge) setNudge(data.nudge)
+      else setNudge(null)
     })
   }, [user])
 
@@ -98,6 +101,19 @@ export default function App() {
     await setDoc(doc(db, 'users', user.uid), { circleId: circleRef.id }, { merge: true })
   }
 
+  async function sendNudge(targetUid, targetName) {
+    if (!user) return
+    await updateDoc(doc(db, 'users', targetUid), {
+      nudge: { from: user.displayName || 'Someone', sentAt: new Date().toISOString() }
+    })
+  }
+
+  async function dismissNudge() {
+    if (!user) return
+    setNudge(null)
+    await updateDoc(doc(db, 'users', user.uid), { nudge: null })
+  }
+
   async function setGoal(text) {
     if (!circle?.id) return
     const weekStart = getWeekStart()
@@ -125,6 +141,7 @@ export default function App() {
           <button
             onClick={() => {
               setUser({ uid: 'dev', displayName: 'Christina', email: 'christina@gmail.com', photoURL: null })
+              setCircleState({ id: 'dev-circle', name: 'Morning Crew', code: 'MCR42X', members: ['dev', 'u2', 'u3'] })
             }}
             style={{ position: 'fixed', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: '#333', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 12, zIndex: 999 }}
           >
@@ -151,6 +168,9 @@ export default function App() {
         onAddPost={addPost}
         goal={goal}
         setGoal={setGoal}
+        nudge={nudge}
+        dismissNudge={dismissNudge}
+        sendNudge={sendNudge}
       />
       <BottomNav active={tab} onNavigate={setTab} />
     </div>

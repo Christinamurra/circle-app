@@ -2,7 +2,7 @@ import LeafBanner from '../components/LeafBanner'
 import { getQuoteForDay } from '../data/quotes'
 import './Home.css'
 
-export default function Home({ onNavigate, onAddPost }) {
+export default function Home({ onNavigate, circle, nudge, dismissNudge }) {
   const today = new Date()
   const startOfWeek = new Date(today)
   startOfWeek.setDate(today.getDate() - today.getDay() + 1)
@@ -25,6 +25,13 @@ export default function Home({ onNavigate, onAddPost }) {
         </div>
       </header>
 
+      {nudge && (
+        <div className="nudge-banner">
+          <span className="nudge-banner__text">👋 {nudge.from} nudged you — time to show up!</span>
+          <button className="nudge-banner__close" onClick={dismissNudge}>✕</button>
+        </div>
+      )}
+
       <div className="home-hero">
         <LeafBanner height={220} />
         <div className="home-hero__content">
@@ -35,23 +42,26 @@ export default function Home({ onNavigate, onAddPost }) {
 
       <div className="home-body">
         <div className="quote-card">
-          <span className="quote-card__icon">
-            <BellIcon />
-          </span>
+          <span className="quote-card__icon"><BellIcon /></span>
           <p className="quote-card__text">"{quote.text}"</p>
           <p className="quote-card__attr">— {quote.attr}</p>
         </div>
 
-        <div className="empty-circle">
-          <div className="empty-circle__icon">
-            <PersonGroupIcon />
+        {!circle ? (
+          <div className="empty-circle">
+            <div className="empty-circle__icon"><PersonGroupIcon /></div>
+            <h3 className="empty-circle__title">You're not in a circle yet</h3>
+            <p className="empty-circle__sub">Create or join a circle to get started</p>
+            <button className="btn-primary" onClick={() => onNavigate('circle')}>Go to Team</button>
           </div>
-          <h3 className="empty-circle__title">You're not in a circle yet</h3>
-          <p className="empty-circle__sub">Create or join a circle to get started</p>
-          <button className="btn-primary" onClick={() => onNavigate('circle')}>
-            Go to Team
-          </button>
-        </div>
+        ) : (
+          <div className="empty-circle">
+            <div className="empty-circle__icon"><PersonGroupIcon /></div>
+            <h3 className="empty-circle__title">{circle.name}</h3>
+            <p className="empty-circle__sub">{circle.members?.length || 1} member{(circle.members?.length || 1) !== 1 ? 's' : ''} in your circle</p>
+            <button className="btn-primary" onClick={() => onNavigate('feed')}>View Feed</button>
+          </div>
+        )}
       </div>
     </div>
   )

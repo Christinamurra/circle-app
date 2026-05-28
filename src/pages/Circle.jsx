@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { db, auth } from '../firebase'
-import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore'
 import './Circle.css'
 
 function randomCode() {
@@ -13,13 +13,30 @@ const MOCK_MEMBERS = [
   { uid: 'u4', name: 'Priya', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80' },
 ]
 
-export default function Circle({ circle, setCircle, user }) {
+export default function Circle({ circle, setCircle, user, sendNudge, posts = [] }) {
   const [modal, setModal] = useState(null)
   const [name, setName] = useState('')
   const [joinCode, setJoinCode] = useState('')
+  const [renameInput, setRenameInput] = useState('')
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const isCreator = circle && user && circle.createdBy === user.uid
+
+  async function handleRename() {
+    if (!renameInput.trim() || !circle?.id) return
+    setLoading(true)
+    try {
+      await updateDoc(doc(db, 'circles', circle.id), { name: renameInput.trim() })
+      setModal(null)
+      setRenameInput('')
+    } catch (e) {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleCreate() {
     if (!name.trim()) return
@@ -88,10 +105,32 @@ export default function Circle({ circle, setCircle, user }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const thisWeek = (() => {
+    const today = new Date()
+    const weekStart = new Date(today)
+    weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+    weekStart.setHours(0,0,0,0)
+    const postedThisWeek = new Set()
+    posts.forEach(p => {
+      if (new Date(p.date + 'T12:00:00') >= weekStart) postedThisWeek.add(p.userId)
+    })
+    return postedThisWeek
+  })()
+
   return (
     <div className="screen">
       <header className="circle-header">
-        <h1 className="circle-header__title">My Circle</h1>
+        <div className="circle-header__logo">
+          <CircleLogoIcon />
+          <div>
+            <h1 className="circle-header__title">{circle?.name || 'My Circle'}</h1>
+            {isCreator && (
+              <button className="circle-rename-btn" onClick={() => { setRenameInput(circle.name); setModal('rename'); setError('') }}>
+                Edit name
+              </button>
+            )}
+          </div>
+        </div>
         {circle && (
           <button className="circle-header__add" onClick={() => { setModal('invite') }} aria-label="Invite">
             <PlusIcon />
@@ -129,6 +168,32 @@ export default function Circle({ circle, setCircle, user }) {
                 </div>
                 <span className="circle-member__name">Invite</span>
               </button>
+            </div>
+          </div>
+
+          <div className="circle-this-week">
+            <p className="circle-this-week__title">THIS WEEK</p>
+            <div className="circle-week-rows">
+              {user && (
+                <div className="circle-week-row">
+                  <div className="circle-week-dot" style={{ background: thisWeek.has(user.uid) ? '#C4614A' : '#E5DDD6' }} />
+                  <span className="circle-week-name">{user.displayName?.split(' ')[0] || 'You'} (You)</span>
+                  {!thisWeek.has(user.uid) && <span className="circle-week-status">Not posted yet</span>}
+                  {thisWeek.has(user.uid) && <span className="circle-week-status circle-week-status--done">✓ Posted</span>}
+                </div>
+              )}
+              {MOCK_MEMBERS.slice(0, (circle.members?.length || 1) - 1).map(m => (
+                <div key={m.uid} className="circle-week-row">
+                  <div className="circle-week-dot" style={{ background: thisWeek.has(m.uid) ? '#C4614A' : '#E5DDD6' }} />
+                  <span className="circle-week-name">{m.name}</span>
+                  {!thisWeek.has(m.uid) && (
+                    <button className="circle-nudge-btn" onClick={() => sendNudge?.(m.uid, m.name)}>
+                      👋 Nudge
+                    </button>
+                  )}
+                  {thisWeek.has(m.uid) && <span className="circle-week-status circle-week-status--done">✓ Posted</span>}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -204,6 +269,28 @@ export default function Circle({ circle, setCircle, user }) {
         </div>
       )}
 
+      {modal === 'rename' && (
+        <div className="modal-overlay" onClick={() => setModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3 className="modal__title">Rename Circle</h3>
+            <p className="modal__sub">Only you (the creator) can rename this circle</p>
+            <input
+              className="modal__input"
+              placeholder="New circle name"
+              value={renameInput}
+              onChange={e => setRenameInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleRename()}
+              autoFocus
+            />
+            {error && <p className="modal__error">{error}</p>}
+            <button className="modal__btn-primary" onClick={handleRename} disabled={!renameInput.trim() || loading}>
+              {loading ? 'Saving…' : 'Save'}
+            </button>
+            <button className="modal__btn-cancel" onClick={() => setModal(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
       {modal === 'invite' && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -222,6 +309,15 @@ export default function Circle({ circle, setCircle, user }) {
         </div>
       )}
     </div>
+  )
+}
+
+function CircleLogoIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 26 26" fill="none">
+      <circle cx="13" cy="13" r="11" stroke="#C4614A" strokeWidth="2.2" />
+      <circle cx="13" cy="13" r="5.5" stroke="#C4614A" strokeWidth="2.2" />
+    </svg>
   )
 }
 
