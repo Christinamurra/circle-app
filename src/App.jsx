@@ -10,12 +10,14 @@ import Feed from './pages/Feed'
 import Circle from './pages/Circle'
 import Profile from './pages/Profile'
 import SignIn from './pages/SignIn'
+import Onboarding from './pages/Onboarding'
 import BottomNav from './components/BottomNav'
 import './App.css'
 
 export default function App() {
   const [user, setUser] = useState(undefined) // undefined = loading
   const [tab, setTab] = useState('home')
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('onboarding_done'))
   const [posts, setPosts] = useState([])
   const [circle, setCircleState] = useState(null)
   const [goal, setGoalState] = useState(null)
@@ -153,6 +155,17 @@ export default function App() {
       <div className="app-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid #C4614A', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    )
+  }
+
+  if (showOnboarding) {
+    return (
+      <div className="app-shell">
+        <Onboarding onDone={() => {
+          localStorage.setItem('onboarding_done', '1')
+          setShowOnboarding(false)
+        }} />
       </div>
     )
   }

@@ -1,0 +1,133 @@
+.onboarding {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding--image { background: #1a1a1a; }
+.onboarding--cream { background: var(--cream); }
+.onboarding--dark  { background: #1A1A1A; }
+
+.onboarding__img-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.onboarding__img-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.onboarding__img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%);
+}
+
+.onboarding__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 32px 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.onboarding__emoji {
+  font-size: 56px;
+  margin-bottom: 20px;
+}
+
+.onboarding__title {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  white-space: pre-line;
+  margin-bottom: 16px;
+}
+
+.onboarding--image .onboarding__title,
+.onboarding--dark .onboarding__title {
+  color: #fff;
+}
+
+.onboarding--cream .onboarding__title {
+  color: var(--dark);
+}
+
+.onboarding__sub {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.onboarding--image .onboarding__sub,
+.onboarding--dark .onboarding__sub {
+  color: rgba(255,255,255,0.75);
+}
+
+.onboarding--cream .onboarding__sub {
+  color: var(--mid);
+}
+
+.onboarding__footer {
+  padding: 24px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.onboarding__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.onboarding__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: background 0.2s;
+}
+
+.onboarding--cream .onboarding__dot {
+  background: var(--border);
+}
+
+.onboarding__dot--active {
+  background: #C4614A !important;
+  width: 20px;
+  border-radius: 3px;
+}
+
+.onboarding__cta {
+  width: 100%;
+  background: #C4614A;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 17px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+.onboarding__skip {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.onboarding--cream .onboarding__skip { color: var(--soft); }
+.onboarding--image .onboarding__skip,
+.onboarding--dark .onboarding__skip  { color: rgba(255,255,255,0.5); }
