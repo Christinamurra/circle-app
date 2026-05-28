@@ -1,23 +1,24 @@
 import { useState } from 'react'
 import leavesImg from '../assets/leaves.jpg'
+import workoutImg from '../assets/workout.jpg'
 import './Onboarding.css'
 
 const slides = [
   {
     bg: 'image',
-    emoji: null,
+    img: leavesImg,
     title: 'Show up for\nyour people.',
     sub: 'Circle is your accountability crew — the people who keep you going.',
   },
   {
-    bg: 'cream',
-    emoji: '💪',
+    bg: 'image',
+    img: workoutImg,
     title: 'Set goals.\nPost progress.\nGet nudged.',
     sub: 'Your circle sets a weekly goal together. Post a photo when you show up. Nudge anyone who goes quiet.',
   },
   {
     bg: 'dark',
-    emoji: '⭕',
+    img: null,
     title: 'Build your\ncircle.',
     sub: 'Create a circle and invite your people with a code. Or join one a friend already started.',
   },
@@ -48,15 +49,14 @@ export default function Onboarding({ onDone }) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {slide.bg === 'image' && (
+      {slide.bg === 'image' && slide.img && (
         <div className="onboarding__img-bg">
-          <img src={leavesImg} alt="" />
+          <img src={slide.img} alt="" />
           <div className="onboarding__img-overlay" />
         </div>
       )}
 
       <div className="onboarding__content">
-        {slide.emoji && <div className="onboarding__emoji">{slide.emoji}</div>}
         <h1 className="onboarding__title">{slide.title}</h1>
         <p className="onboarding__sub">{slide.sub}</p>
       </div>
