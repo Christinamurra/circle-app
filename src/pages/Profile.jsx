@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
-import { auth } from '../firebase'
+import { auth, db, storage } from '../firebase'
 import { signOut } from 'firebase/auth'
+import { doc, updateDoc } from 'firebase/firestore'
+import { ref, uploadString, getDownloadURL } from 'firebase/storage'
 import './Profile.css'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -53,10 +55,24 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => setAvatar(ev.target.result)
-    reader.readAsDataURL(file)
     e.target.value = ''
+    const reader = new FileReader()
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target.result
+      setAvatar(dataUrl) // show immediately
+      try {
+        const uid = auth.currentUser?.uid
+        if (!uid) return
+        const photoRef = ref(storage, `avatars/${uid}.jpg`)
+        await uploadString(photoRef, dataUrl, 'data_url')
+        const url = await getDownloadURL(photoRef)
+        await updateDoc(doc(db, 'users', uid), { photoURL: url })
+        setAvatar(url) // replace data URL with persistent URL
+      } catch (e) {
+        console.error('Avatar upload failed', e)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const prevMonth = () => {

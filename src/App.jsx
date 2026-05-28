@@ -56,6 +56,7 @@ export default function App() {
       }
       if (data?.nudge) setNudge(data.nudge)
       else setNudge(null)
+      if (data?.photoURL) setLocalAvatar(data.photoURL)
     })
   }, [user])
 
