@@ -14,7 +14,7 @@ const MOCK_MEMBERS = [
   { uid: 'u4', name: 'Priya', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80' },
 ]
 
-export default function Circle({ circle, setCircle, user, sendNudge, posts = [] }) {
+export default function Circle({ circle, setCircle, user, sendNudge, posts = [], members = [] }) {
   const [modal, setModal] = useState(null)
   const [name, setName] = useState('')
   const [joinCode, setJoinCode] = useState('')
@@ -155,12 +155,15 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [] 
                   <span className="circle-member__name">{user.displayName?.split(' ')[0] || 'You'}</span>
                 </div>
               )}
-              {MOCK_MEMBERS.slice(0, (circle.members?.length || 1) - 1).map(m => (
+              {members.filter(m => m.uid !== user?.uid).map(m => (
                 <div key={m.uid} className="circle-member">
                   <div className="circle-member__avatar">
-                    <img src={m.photo} alt={m.name} />
+                    {m.photoURL
+                      ? <img src={m.photoURL} alt={m.displayName} />
+                      : <span style={{ fontSize: 14, color: '#fff' }}>{m.displayName?.[0] || '?'}</span>
+                    }
                   </div>
-                  <span className="circle-member__name">{m.name}</span>
+                  <span className="circle-member__name">{m.displayName?.split(' ')[0] || 'Member'}</span>
                 </div>
               ))}
               <button className="circle-member circle-member--add" onClick={() => setModal('invite')}>
@@ -183,12 +186,12 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [] 
                   {thisWeek.has(user.uid) && <span className="circle-week-status circle-week-status--done">✓ Posted</span>}
                 </div>
               )}
-              {MOCK_MEMBERS.slice(0, (circle.members?.length || 1) - 1).map(m => (
+              {members.filter(m => m.uid !== user?.uid).map(m => (
                 <div key={m.uid} className="circle-week-row">
                   <div className="circle-week-dot" style={{ background: thisWeek.has(m.uid) ? '#C4614A' : '#E5DDD6' }} />
-                  <span className="circle-week-name">{m.name}</span>
+                  <span className="circle-week-name">{m.displayName?.split(' ')[0] || 'Member'}</span>
                   {!thisWeek.has(m.uid) && (
-                    <button className="circle-nudge-btn" onClick={() => sendNudge?.(m.uid, m.name)}>
+                    <button className="circle-nudge-btn" onClick={() => sendNudge?.(m.uid, m.displayName)}>
                       👋 Nudge
                     </button>
                   )}

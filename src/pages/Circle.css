@@ -301,6 +301,10 @@
   border-radius: 50%;
   overflow: hidden;
   border: 2.5px solid var(--terracotta);
+  background: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .circle-member__avatar img {

@@ -21,13 +21,21 @@ export default function App() {
   const [goal, setGoalState] = useState(null)
   const [localAvatar, setLocalAvatar] = useState(null)
   const [nudge, setNudge] = useState(null)
+  const [members, setMembers] = useState([])
 
-  // Auth listener
+  // Auth listener — save profile to Firestore on sign-in
   useEffect(() => {
     const timeout = setTimeout(() => setUser(null), 5000)
     const unsub = onAuthStateChanged(auth, u => {
       clearTimeout(timeout)
       setUser(u ?? null)
+      if (u) {
+        setDoc(doc(db, 'users', u.uid), {
+          displayName: u.displayName || '',
+          photoURL: u.photoURL || '',
+          email: u.email || '',
+        }, { merge: true })
+      }
     })
     return () => { clearTimeout(timeout); unsub() }
   }, [])
@@ -50,6 +58,16 @@ export default function App() {
       else setNudge(null)
     })
   }, [user])
+
+  // Load real member profiles for current circle
+  useEffect(() => {
+    if (!circle?.members?.length) { setMembers([]); return }
+    Promise.all(
+      circle.members.map(uid => getDoc(doc(db, 'users', uid)))
+    ).then(snaps => {
+      setMembers(snaps.filter(s => s.exists()).map(s => ({ uid: s.id, ...s.data() })))
+    })
+  }, [circle?.members?.join(',')])
 
   // Load posts for current circle
   useEffect(() => {
@@ -171,6 +189,7 @@ export default function App() {
         nudge={nudge}
         dismissNudge={dismissNudge}
         sendNudge={sendNudge}
+        members={members}
       />
       <BottomNav active={tab} onNavigate={setTab} />
     </div>
