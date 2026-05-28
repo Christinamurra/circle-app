@@ -52,7 +52,7 @@ body {
 }
 
 .screen {
-  height: calc(844px - var(--nav-h));
+  height: calc(100% - var(--nav-h));
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;

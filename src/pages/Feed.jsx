@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import { storage, auth } from '../firebase'
 import { ref, uploadString, getDownloadURL } from 'firebase/storage'
@@ -9,6 +9,31 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
+
+  async function uploadDataUrl(dataUrl) {
+    setUploading(true)
+    try {
+      const uid = auth.currentUser?.uid
+      const photoRef = ref(storage, `posts/${uid}/${Date.now()}.jpg`)
+      await uploadString(photoRef, dataUrl, 'data_url')
+      const url = await getDownloadURL(photoRef)
+      await onAddPost(url)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  function handleFileInput(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    const reader = new FileReader()
+    reader.onload = ev => uploadDataUrl(ev.target.result)
+    reader.readAsDataURL(file)
+  }
 
   async function handlePostUpdate() {
     try {
@@ -18,18 +43,12 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt,
       })
-      setUploading(true)
-      const uid = auth.currentUser?.uid
-      const photoRef = ref(storage, `posts/${uid}/${Date.now()}.jpg`)
-      await uploadString(photoRef, photo.dataUrl, 'data_url')
-      const url = await getDownloadURL(photoRef)
-      await onAddPost(url)
+      await uploadDataUrl(photo.dataUrl)
     } catch (e) {
-      if (e?.message !== 'User cancelled photos app') {
-        console.error(e)
-      }
-    } finally {
-      setUploading(false)
+      const msg = e?.message || ''
+      if (msg === 'User cancelled photos app' || msg.includes('cancel')) return
+      // Camera plugin unavailable (e.g. Mac) — fall back to file picker
+      fileInputRef.current?.click()
     }
   }
 
@@ -43,6 +62,13 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
 
   return (
     <div className="screen feed-screen">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileInput}
+      />
       <header className="feed-header">
         <div className="feed-logo">
           <CircleLogoIcon />

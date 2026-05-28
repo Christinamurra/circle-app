@@ -19,10 +19,16 @@ export default function App() {
   const [posts, setPosts] = useState([])
   const [circle, setCircleState] = useState(null)
   const [goal, setGoalState] = useState(null)
+  const [localAvatar, setLocalAvatar] = useState(null)
 
   // Auth listener
   useEffect(() => {
-    return onAuthStateChanged(auth, u => setUser(u ?? null))
+    const timeout = setTimeout(() => setUser(null), 5000)
+    const unsub = onAuthStateChanged(auth, u => {
+      clearTimeout(timeout)
+      setUser(u ?? null)
+    })
+    return () => { clearTimeout(timeout); unsub() }
   }, [])
 
   // Load circle membership
@@ -139,7 +145,8 @@ export default function App() {
         posts={posts}
         circle={circle}
         setCircle={setCircle}
-        avatar={user?.photoURL}
+        avatar={localAvatar || user?.photoURL}
+        setAvatar={setLocalAvatar}
         user={user}
         onAddPost={addPost}
         goal={goal}
