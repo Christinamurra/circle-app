@@ -14,7 +14,7 @@ function buildCalendar(year, month) {
   return cells
 }
 
-export default function Profile({ avatar, setAvatar, posts = [], onNavigate, user }) {
+export default function Profile({ avatar, setAvatar, posts = [], onNavigate, user, circle }) {
   const today = new Date()
   const [calYear, setCalYear] = useState(today.getFullYear())
   const [calMonth, setCalMonth] = useState(today.getMonth())
@@ -68,14 +68,16 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
     else setCalMonth(m => m + 1)
   }
 
+  const toLocalDateStr = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+
   const streak = (() => {
     if (posts.length === 0) return 0
     const sorted = [...postDates].sort().reverse()
     let count = 0
     let check = new Date(today)
     for (const dateStr of sorted) {
-      const checkStr = check.toISOString().split('T')[0]
-      if (dateStr === checkStr) {
+      if (dateStr === toLocalDateStr(check)) {
         count++
         check.setDate(check.getDate() - 1)
       } else break
@@ -121,7 +123,7 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
         </div>
         <div className="stat-divider" />
         <div className="stat">
-          <span className="stat__num">—</span>
+          <span className="stat__num">{circle ? 1 : 0}</span>
           <span className="stat__label">Circles</span>
         </div>
         <div className="stat-divider" />
