@@ -14,17 +14,17 @@ function buildCalendar(year, month) {
   return cells
 }
 
-export default function Profile({ avatar, setAvatar, posts = [], onAddPost, user }) {
+export default function Profile({ avatar, setAvatar, posts = [], onNavigate, user }) {
   const today = new Date()
   const [calYear, setCalYear] = useState(today.getFullYear())
   const [calMonth, setCalMonth] = useState(today.getMonth())
+  const [selectedPhoto, setSelectedPhoto] = useState(null)
   const fileInputRef = useRef(null)
 
   const cells = buildCalendar(calYear, calMonth)
   const weekDays = ['S','M','T','W','T','F','S']
   const progressDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 
-  // days that have posts this week (Mon=0 … Sun=6)
   const weekStart = new Date(today)
   weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7))
   const thisWeekPosted = new Set()
@@ -35,17 +35,18 @@ export default function Profile({ avatar, setAvatar, posts = [], onAddPost, user
   })
 
   const postDates = new Set(posts.map(p => p.date))
+  const postByDate = {}
+  posts.forEach(p => { if (p.photo) postByDate[p.date] = p.photo })
 
   const isToday = (d) =>
     d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear()
 
-  const hasPost = (d) => {
-    if (!d) return false
-    const str = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-    return postDates.has(str)
-  }
+  const dateStr = (d) =>
+    `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
 
-  const todayDow = ((today.getDay() + 6) % 7) // 0=Mon … 6=Sun
+  const hasPost = (d) => d && postDates.has(dateStr(d))
+
+  const todayDow = ((today.getDay() + 6) % 7)
 
   const handleAvatarClick = () => fileInputRef.current?.click()
 
@@ -147,7 +148,7 @@ export default function Profile({ avatar, setAvatar, posts = [], onAddPost, user
       </div>
 
       <div className="profile-post-btn-wrap">
-        <button className="fab-btn profile-post-btn" onClick={onAddPost}>
+        <button className="fab-btn profile-post-btn" onClick={() => onNavigate('feed')}>
           <CameraSmallIcon />
           Post an update
         </button>
@@ -168,19 +169,42 @@ export default function Profile({ avatar, setAvatar, posts = [], onAddPost, user
             {weekDays.map((d, i) => (
               <div key={i} className="cal-dow">{d}</div>
             ))}
-            {cells.map((day, i) => (
-              <div key={i} className={[
-                'cal-cell',
-                !day ? 'cal-cell--empty' : '',
-                day && isToday(day) ? 'cal-cell--today' : '',
-                day && hasPost(day) ? 'cal-cell--posted' : '',
-              ].join(' ')}>
-                {day}
-              </div>
-            ))}
+            {cells.map((day, i) => {
+              const ds = day ? dateStr(day) : null
+              const photo = ds ? postByDate[ds] : null
+              return (
+                <button
+                  key={i}
+                  disabled={!day}
+                  onClick={() => photo && setSelectedPhoto({ photo, date: ds })}
+                  className={[
+                    'cal-cell',
+                    !day ? 'cal-cell--empty' : '',
+                    day && isToday(day) ? 'cal-cell--today' : '',
+                    day && hasPost(day) ? 'cal-cell--posted' : '',
+                    photo ? 'cal-cell--has-photo' : '',
+                  ].join(' ')}
+                >
+                  {photo
+                    ? <img src={photo} alt={ds} className="cal-cell__photo" />
+                    : day
+                  }
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
+
+      {selectedPhoto && (
+        <div className="photo-lightbox" onClick={() => setSelectedPhoto(null)}>
+          <button className="photo-lightbox__close">✕</button>
+          <img src={selectedPhoto.photo} alt={selectedPhoto.date} className="photo-lightbox__img" />
+          <p className="photo-lightbox__date">
+            {new Date(selectedPhoto.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

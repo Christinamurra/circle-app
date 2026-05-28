@@ -5,7 +5,7 @@ import { ref, uploadString, getDownloadURL } from 'firebase/storage'
 import LeafBanner from '../components/LeafBanner'
 import './Feed.css'
 
-export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
+export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate }) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -36,6 +36,15 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
   }
 
   async function handlePostUpdate() {
+    if (!circle?.id) {
+      onNavigate('circle')
+      return
+    }
+    const isTouchDevice = navigator.maxTouchPoints > 0
+    if (!isTouchDevice) {
+      fileInputRef.current?.click()
+      return
+    }
     try {
       const photo = await Camera.getPhoto({
         quality: 80,
@@ -47,8 +56,11 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
     } catch (e) {
       const msg = e?.message || ''
       if (msg === 'User cancelled photos app' || msg.includes('cancel')) return
-      // Camera plugin unavailable (e.g. Mac) — fall back to file picker
-      fileInputRef.current?.click()
+      if (msg.toLowerCase().includes('denied') || msg.toLowerCase().includes('permission')) {
+        alert('Please allow camera and photo access in Settings > Circle to post updates.')
+        return
+      }
+      console.error(e)
     }
   }
 
@@ -87,7 +99,11 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal }) {
             <h2 className="goal-banner__title">{goal || 'No goal set yet'}</h2>
             <button
               className="goal-banner__btn"
-              onClick={() => { setGoalInput(goal || ''); setShowGoalModal(true) }}
+              onClick={() => {
+                if (!circle?.id) { onNavigate('circle'); return }
+                setGoalInput(goal || '')
+                setShowGoalModal(true)
+              }}
             >
               {goal ? 'Edit Goal' : 'Set a Goal'}
             </button>
