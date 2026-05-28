@@ -5,6 +5,7 @@ import {
   doc, collection, onSnapshot, addDoc, setDoc,
   deleteDoc, query, where, orderBy, getDoc, getDocs, updateDoc, arrayUnion
 } from 'firebase/firestore'
+import { registerPushNotifications } from './utils/pushNotifications'
 import Home from './pages/Home'
 import Feed from './pages/Feed'
 import Circle from './pages/Circle'
@@ -37,6 +38,7 @@ export default function App() {
           photoURL: u.photoURL || '',
           email: u.email || '',
         }, { merge: true })
+        registerPushNotifications(u.uid)
       }
     })
     return () => { clearTimeout(timeout); unsub() }
