@@ -181,8 +181,22 @@ export default function App() {
         {import.meta.env.DEV && (
           <button
             onClick={() => {
-              setUser({ uid: 'dev', displayName: 'Christina', email: 'christina@gmail.com', photoURL: null })
-              setCircleState({ id: 'dev-circle', name: 'Morning Crew', code: 'MCR42X', members: ['dev', 'u2', 'u3'] })
+              setUser({ uid: 'dev', displayName: 'Christina', email: 'christina@gmail.com', photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80' })
+              setCircleState({ id: 'dev-circle', name: 'Morning Crew', code: 'MCR42X', members: ['dev', 'u2', 'u3', 'u4'] })
+              setMembers([
+                { uid: 'dev', displayName: 'Christina', photoURL: 'https://i.pravatar.cc/100?img=47' },
+                { uid: 'u2', displayName: 'Jess', photoURL: 'https://i.pravatar.cc/100?img=5' },
+                { uid: 'u3', displayName: 'Marcus', photoURL: 'https://i.pravatar.cc/100?img=12' },
+                { uid: 'u4', displayName: 'Priya', photoURL: 'https://i.pravatar.cc/100?img=25' },
+              ])
+              setGoalState('Work out 3x this week 💪')
+              const today = new Date().toISOString().slice(0,10)
+              const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10)
+              setPosts([
+                { id: 'p1', circleId: 'dev-circle', userId: 'u2', userName: 'Jess', photo: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80', date: today, createdAt: new Date(), likes: ['dev', 'u3'], comments: [] },
+                { id: 'p2', circleId: 'dev-circle', userId: 'dev', userName: 'Christina', photo: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80', date: today, createdAt: new Date(Date.now()-3600000), likes: ['u2'], comments: [{uid:'u2',name:'Jess',text:'Let\'s go!! 🔥',createdAt:''}] },
+                { id: 'p3', circleId: 'dev-circle', userId: 'u3', userName: 'Marcus', photo: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80', date: yesterday, createdAt: new Date(Date.now()-86400000), likes: ['dev','u2','u4'], comments: [] },
+              ])
             }}
             style={{ position: 'fixed', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: '#333', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 12, zIndex: 999 }}
           >
