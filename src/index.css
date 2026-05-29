@@ -27,6 +27,7 @@ body {
   height: 100%;
   width: 100%;
   position: fixed;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
