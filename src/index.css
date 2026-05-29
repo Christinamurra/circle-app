@@ -9,7 +9,7 @@
   --soft: #999;
   --card: #FFFFFF;
   --border: #E5DDD6;
-  --nav-h: calc(72px + env(safe-area-inset-bottom));
+  --nav-h: 72px;
 }
 
 html {
@@ -47,7 +47,7 @@ body {
   position: relative;
   box-shadow: none;
   padding-top: env(safe-area-inset-top);
-  transform: translateZ(0);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Browser preview on desktop — phone mockup */
@@ -67,7 +67,8 @@ body {
 }
 
 .screen {
-  height: calc(100% - var(--nav-h));
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;

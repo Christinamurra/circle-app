@@ -113,6 +113,7 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
   const allPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
   return (
+    <>
     <div className="screen feed-screen">
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileInput} />
 
@@ -232,38 +233,40 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
         )}
       </div>
 
-      <div className="feed-fab">
-        <button className="fab-btn" onClick={handlePostUpdate} disabled={uploading}>
-          <CameraSmallIcon color="#fff" />
-          {uploading ? 'Uploading…' : 'Post an update'}
-        </button>
-      </div>
-
-      {showGoalModal && (
-        <>
-          <div className="modal-overlay" onClick={() => setShowGoalModal(false)} />
-          <div className="modal-sheet">
-            <div className="modal-handle" />
-            <h3 className="modal-title">Set This Week's Goal</h3>
-            <p className="modal-sub">What does your circle want to achieve this week?</p>
-            <textarea
-              className="goal-input"
-              placeholder="e.g. Work out 3 times this week"
-              value={goalInput}
-              onChange={e => setGoalInput(e.target.value)}
-              rows={3}
-              autoFocus
-            />
-            <button className="modal-btn modal-btn--primary" onClick={saveGoal}>Save Goal</button>
-            {goal && (
-              <button className="modal-btn modal-btn--ghost" onClick={() => { setGoal(null); setShowGoalModal(false) }}>
-                Clear Goal
-              </button>
-            )}
-          </div>
-        </>
-      )}
     </div>
+
+    <div className="feed-fab">
+      <button className="fab-btn" onClick={handlePostUpdate} disabled={uploading}>
+        <CameraSmallIcon color="#fff" />
+        {uploading ? 'Uploading…' : 'Post an update'}
+      </button>
+    </div>
+
+    {showGoalModal && (
+      <>
+        <div className="modal-overlay" onClick={() => setShowGoalModal(false)} />
+        <div className="modal-sheet">
+          <div className="modal-handle" />
+          <h3 className="modal-title">Set This Week's Goal</h3>
+          <p className="modal-sub">What does your circle want to achieve this week?</p>
+          <textarea
+            className="goal-input"
+            placeholder="e.g. Work out 3 times this week"
+            value={goalInput}
+            onChange={e => setGoalInput(e.target.value)}
+            rows={3}
+            autoFocus
+          />
+          <button className="modal-btn modal-btn--primary" onClick={saveGoal}>Save Goal</button>
+          {goal && (
+            <button className="modal-btn modal-btn--ghost" onClick={() => { setGoal(null); setShowGoalModal(false) }}>
+              Clear Goal
+            </button>
+          )}
+        </div>
+      </>
+    )}
+    </>
   )
 }
 
