@@ -275,12 +275,17 @@
 
 /* FAB */
 .feed-fab {
-  position: absolute;
-  bottom: 0;
+  position: fixed;
+  bottom: var(--nav-h);
   left: 0;
   right: 0;
   padding: 12px 20px 14px;
   background: linear-gradient(to top, var(--cream) 70%, transparent);
+  pointer-events: none;
+}
+
+.feed-fab .fab-btn {
+  pointer-events: all;
 }
 
 .fab-btn {

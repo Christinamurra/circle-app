@@ -9,7 +9,7 @@
   --soft: #999;
   --card: #FFFFFF;
   --border: #E5DDD6;
-  --nav-h: 72px;
+  --nav-h: calc(72px + env(safe-area-inset-bottom));
 }
 
 html {
@@ -47,7 +47,6 @@ body {
   position: relative;
   box-shadow: none;
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Browser preview on desktop — phone mockup */
