@@ -1,11 +1,12 @@
 .bottom-nav {
-  height: var(--nav-h);
   background: var(--cream);
   border-top: 1px solid var(--border);
   display: flex;
   align-items: flex-start;
   padding-top: 10px;
+  padding-bottom: env(safe-area-inset-bottom);
   flex-shrink: 0;
+  min-height: var(--nav-h);
 }
 
 .nav-tab {

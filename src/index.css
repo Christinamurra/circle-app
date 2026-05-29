@@ -48,7 +48,6 @@ body {
   position: relative;
   box-shadow: none;
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Browser preview on desktop — phone mockup */
