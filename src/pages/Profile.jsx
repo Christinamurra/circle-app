@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import { auth, db, storage } from '../firebase'
 import { signOut } from 'firebase/auth'
 import { doc, updateDoc } from 'firebase/firestore'
@@ -50,7 +51,30 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
 
   const todayDow = ((today.getDay() + 6) % 7)
 
-  const handleAvatarClick = () => fileInputRef.current?.click()
+  const handleAvatarClick = async () => {
+    const isTouchDevice = navigator.maxTouchPoints > 0
+    if (!isTouchDevice) { fileInputRef.current?.click(); return }
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: true,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+      })
+      const dataUrl = photo.dataUrl
+      setAvatar(dataUrl)
+      const uid = user?.uid || auth.currentUser?.uid
+      if (!uid) return
+      const photoRef = ref(storage, `avatars/${uid}.jpg`)
+      await uploadString(photoRef, dataUrl, 'data_url')
+      const url = await getDownloadURL(photoRef)
+      await updateDoc(doc(db, 'users', uid), { photoURL: url })
+      setAvatar(url)
+    } catch (e) {
+      if (e?.message?.includes('cancel')) return
+      console.error('Avatar upload failed', e)
+    }
+  }
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
@@ -59,15 +83,15 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
     const reader = new FileReader()
     reader.onload = async (ev) => {
       const dataUrl = ev.target.result
-      setAvatar(dataUrl) // show immediately
+      setAvatar(dataUrl)
       try {
-        const uid = auth.currentUser?.uid
+        const uid = user?.uid || auth.currentUser?.uid
         if (!uid) return
         const photoRef = ref(storage, `avatars/${uid}.jpg`)
         await uploadString(photoRef, dataUrl, 'data_url')
         const url = await getDownloadURL(photoRef)
         await updateDoc(doc(db, 'users', uid), { photoURL: url })
-        setAvatar(url) // replace data URL with persistent URL
+        setAvatar(url)
       } catch (e) {
         console.error('Avatar upload failed', e)
       }
