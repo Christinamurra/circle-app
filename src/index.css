@@ -12,13 +12,21 @@
   --nav-h: 72px;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   background: #D8D0C8;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 100%;
+  width: 100%;
+  position: fixed;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
@@ -57,6 +65,7 @@ body {
   overflow-x: hidden;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 .screen::-webkit-scrollbar { display: none; }
 

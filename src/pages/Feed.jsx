@@ -18,7 +18,8 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
   async function uploadDataUrl(dataUrl) {
     setUploading(true)
     try {
-      const uid = auth.currentUser?.uid
+      const uid = user?.uid || auth.currentUser?.uid
+      if (!uid) throw new Error('Not signed in')
       const photoRef = ref(storage, `posts/${uid}/${Date.now()}.jpg`)
       await uploadString(photoRef, dataUrl, 'data_url')
       const url = await getDownloadURL(photoRef)
@@ -30,7 +31,8 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
         colors: ['#C4614A', '#F2EDE7', '#D4745E', '#ffffff', '#ffcc00'],
       })
     } catch (e) {
-      console.error(e)
+      console.error('Post failed:', e)
+      alert('Post failed: ' + (e?.message || 'Unknown error'))
     } finally {
       setUploading(false)
     }
@@ -95,12 +97,17 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
     setCommentInputs(prev => ({ ...prev, [post.id]: '' }))
   }
 
-  function saveGoal() {
+  async function saveGoal() {
     const trimmed = goalInput.trim()
     if (!trimmed) return
-    setGoal(trimmed)
-    setGoalInput('')
-    setShowGoalModal(false)
+    try {
+      await setGoal(trimmed)
+      setGoalInput('')
+      setShowGoalModal(false)
+    } catch (e) {
+      console.error('Goal save failed:', e)
+      alert('Could not save goal: ' + (e?.message || 'Unknown error'))
+    }
   }
 
   const allPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))

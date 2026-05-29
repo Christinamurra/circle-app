@@ -84,6 +84,8 @@ export default function App() {
     )
     return onSnapshot(q, snap => {
       setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    }, err => {
+      console.error('Posts query error:', err.message)
     })
   }, [circle?.id])
 
