@@ -75,11 +75,23 @@
   margin-top: 4px;
 }
 
+.home-screen {
+  display: flex;
+  flex-direction: column;
+}
+
 .home-body {
-  padding: 16px 16px 32px;
+  padding: 16px 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex: 1;
+}
+
+.home-body .empty-circle,
+.home-body .quote-card + .empty-circle {
+  flex: 1;
+  justify-content: center;
 }
 
 .quote-card {

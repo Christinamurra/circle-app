@@ -17,7 +17,7 @@ export default function Home({ onNavigate, circle, nudge, dismissNudge }) {
   const quote = getQuoteForDay()
 
   return (
-    <div className="screen">
+    <div className="screen home-screen">
       <header className="home-header">
         <div className="home-logo">
           <CircleLogoIcon />

@@ -74,7 +74,30 @@ body {
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
+  will-change: scroll-position;
+  touch-action: pan-y;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .screen::-webkit-scrollbar { display: none; }
 
 button { cursor: pointer; border: none; font-family: inherit; }
+
+.btn-primary,
+.btn-post,
+.fab-btn,
+.goal-banner__btn,
+.modal-btn--primary {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.btn-primary:active,
+.btn-post:active,
+.fab-btn:active,
+.goal-banner__btn:active,
+.modal-btn--primary:active {
+  transform: scale(0.97);
+  opacity: 0.88;
+}
