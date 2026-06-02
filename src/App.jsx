@@ -35,8 +35,8 @@ export default function App() {
       if (u) {
         setDoc(doc(db, 'users', u.uid), {
           displayName: u.displayName || '',
-          photoURL: u.photoURL || '',
           email: u.email || '',
+          ...(u.photoURL ? { photoURL: u.photoURL } : {}),
         }, { merge: true })
         registerPushNotifications(u.uid)
       }
@@ -70,7 +70,12 @@ export default function App() {
     Promise.all(
       circle.members.map(uid => getDoc(doc(db, 'users', uid)))
     ).then(snaps => {
-      setMembers(snaps.filter(s => s.exists()).map(s => ({ uid: s.id, ...s.data() })))
+      setMembers(snaps.map((s, i) => {
+        const uid = circle.members[i]
+        if (s.exists()) return { uid, ...s.data() }
+        const profile = circle.memberProfiles?.[uid]
+        return profile ? { uid, ...profile } : null
+      }).filter(Boolean))
     })
   }, [circle?.members?.join(',')])
 
