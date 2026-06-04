@@ -2,17 +2,19 @@ import { useState, useRef } from 'react'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import { storage, auth, db } from '../firebase'
 import { ref, uploadString, getDownloadURL } from 'firebase/storage'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, arrayUnion, collection, addDoc } from 'firebase/firestore'
 import confetti from 'canvas-confetti'
 import LeafBanner from '../components/LeafBanner'
 import './Feed.css'
 
-export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate, user, deletePost }) {
+export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onNavigate, user, deletePost, blockedUsers = [], onBlockUser }) {
   const [showGoalModal, setShowGoalModal] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [uploading, setUploading] = useState(false)
   const [expandedComments, setExpandedComments] = useState({})
   const [commentInputs, setCommentInputs] = useState({})
+  const [optimisticUpdates, setOptimisticUpdates] = useState({})
+  const [showModMenu, setShowModMenu] = useState(null)
   const fileInputRef = useRef(null)
 
   async function uploadDataUrl(dataUrl) {
@@ -75,10 +77,25 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
     const uid = user.uid
     const likes = post.likes || []
     const already = likes.includes(uid)
-    if (post._mock) return // skip Firebase for mock posts
-    await updateDoc(doc(db, 'posts', post.id), {
-      likes: already ? likes.filter(id => id !== uid) : [...likes, uid]
-    })
+    if (post._mock) return
+
+    const newLikes = already ? likes.filter(id => id !== uid) : [...likes, uid]
+    setOptimisticUpdates(prev => ({
+      ...prev,
+      [post.id]: { ...prev[post.id], likes: newLikes }
+    }))
+
+    try {
+      await updateDoc(doc(db, 'posts', post.id), { likes: newLikes })
+    } catch (e) {
+      console.error('Like update failed:', e)
+      setOptimisticUpdates(prev => {
+        const updated = { ...prev }
+        delete updated[post.id]
+        return updated
+      })
+      alert('Could not update like. Please try again.')
+    }
   }
 
   async function submitComment(post) {
@@ -86,15 +103,33 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
     if (!text || !user) return
     const comments = post.comments || []
     if (post._mock) return
-    await updateDoc(doc(db, 'posts', post.id), {
-      comments: [...comments, {
-        uid: user.uid,
-        name: user.displayName || 'You',
-        text,
-        createdAt: new Date().toISOString()
-      }]
-    })
+
+    const newComment = {
+      uid: user.uid,
+      name: user.displayName || 'You',
+      text,
+      createdAt: new Date().toISOString()
+    }
+    const newComments = [...comments, newComment]
+
+    setOptimisticUpdates(prev => ({
+      ...prev,
+      [post.id]: { ...prev[post.id], comments: newComments }
+    }))
     setCommentInputs(prev => ({ ...prev, [post.id]: '' }))
+
+    try {
+      await updateDoc(doc(db, 'posts', post.id), { comments: newComments })
+    } catch (e) {
+      console.error('Comment update failed:', e)
+      setOptimisticUpdates(prev => {
+        const updated = { ...prev }
+        delete updated[post.id]
+        return updated
+      })
+      setCommentInputs(prev => ({ ...prev, [post.id]: text }))
+      alert('Could not post comment. Please try again.')
+    }
   }
 
   async function saveGoal() {
@@ -110,7 +145,51 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
     }
   }
 
-  const allPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  async function flagPost(post, reason) {
+    if (!user) return
+    try {
+      await addDoc(collection(db, 'reports'), {
+        postId: post.id,
+        reportedUserId: post.userId,
+        reporterUserId: user.uid,
+        reason,
+        postContent: post.photo ? 'Photo post' : 'Unknown',
+        circleId: circle?.id,
+        createdAt: new Date().toISOString()
+      })
+      alert('Thank you for reporting this content. Our team will review it within 24 hours.')
+      setShowModMenu(null)
+    } catch (e) {
+      console.error('Report failed:', e)
+      alert('Could not submit report. Please try again.')
+    }
+  }
+
+  async function blockUser(userId, userName) {
+    if (!user) return
+    try {
+      onBlockUser?.(userId)
+      await updateDoc(doc(db, 'users', user.uid), {
+        blockedUsers: arrayUnion(userId)
+      })
+      await addDoc(collection(db, 'reports'), {
+        type: 'block',
+        blockedUserId: userId,
+        blockerUserId: user.uid,
+        circleId: circle?.id,
+        createdAt: new Date().toISOString()
+      })
+      alert(`You've blocked ${userName}. Their posts will no longer appear in your feed.`)
+      setShowModMenu(null)
+    } catch (e) {
+      console.error('Block failed:', e)
+      alert('Could not block user. Please try again.')
+    }
+  }
+
+  const allPosts = [...posts]
+    .filter(p => !blockedUsers.includes(p.userId))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
   return (
     <>
@@ -159,8 +238,9 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
         ) : (
           <div className="feed-posts">
             {allPosts.map(post => {
-              const likes = post.likes || []
-              const comments = post.comments || []
+              const optimistic = optimisticUpdates[post.id] || {}
+              const likes = optimistic.likes ?? (post.likes || [])
+              const comments = optimistic.comments ?? (post.comments || [])
               const liked = user && likes.includes(user.uid)
               const showComments = expandedComments[post.id]
               return (
@@ -170,8 +250,21 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
                       <div className="feed-post-card__avatar-dot" style={{ background: post.userId === user?.uid ? '#C4614A' : '#888' }} />
                       <span className="feed-post-card__name">{post.userName || 'You'}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
                       <span className="feed-post-card__date">{formatDate(post.date)}</span>
+                      <button
+                        onClick={() => setShowModMenu(showModMenu === post.id ? null : post.id)}
+                        style={{ background: 'none', padding: 4, color: '#bbb' }}
+                        aria-label="More options"
+                      >
+                        <MoreIcon />
+                      </button>
+                      {showModMenu === post.id && post.userId !== user?.uid && (
+                        <div className="feed-post-menu">
+                          <button onClick={() => flagPost(post, 'Objectionable content')}>Report post</button>
+                          <button onClick={() => blockUser(post.userId, post.userName)}>Block user</button>
+                        </div>
+                      )}
                       {post.userId === user?.uid && (
                         <button
                           onClick={() => { if (window.confirm('Delete this post?')) deletePost(post) }}
@@ -335,6 +428,16 @@ function ImagePlaceholderIcon() {
       <rect x="4" y="8" width="44" height="36" rx="5" stroke="#ccc" strokeWidth="2.5" />
       <circle cx="16" cy="20" r="4" stroke="#ccc" strokeWidth="2.5" />
       <path d="M4 36L16 24L24 32L32 22L48 38" stroke="#ccc" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function MoreIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="19" r="1" />
     </svg>
   )
 }

@@ -14,9 +14,15 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showEula, setShowEula] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!agreedToTerms) {
+      setShowEula(true)
+      return
+    }
     setError('')
     setLoading(true)
     try {
@@ -35,6 +41,33 @@ export default function SignIn() {
 
   return (
     <div className="signin-screen">
+      {!agreedToTerms && (
+        <>
+          <div className="modal-overlay" />
+          <div className="modal-sheet" style={{ maxHeight: '90vh' }}>
+            <div className="modal-handle" />
+            <h3 className="modal-title">Terms of Service</h3>
+            <div className="modal-content">
+              <p><strong>Acceptable Use Policy</strong></p>
+              <p>By using Circle, you agree that you will not post, share, or engage in any of the following:</p>
+              <ul>
+                <li>Harassing, bullying, or abusive content directed at any individual</li>
+                <li>Hate speech, discrimination, or content that demeans protected groups</li>
+                <li>Explicit sexual content or nudity</li>
+                <li>Violence, threats, or illegal activity</li>
+                <li>Spam, scams, or misleading information</li>
+                <li>Content that violates anyone's privacy or intellectual property rights</li>
+              </ul>
+              <p><strong>Content Moderation</strong></p>
+              <p>We are committed to maintaining a safe community. Circle includes tools to flag objectionable content and block abusive users. All reports are reviewed within 24 hours. Repeat violations will result in account suspension or termination.</p>
+            </div>
+            <button className="modal-btn modal-btn--primary" onClick={() => setAgreedToTerms(true)}>
+              I Agree & Continue
+            </button>
+          </div>
+        </>
+      )}
+
       <div className="signin-top">
         <div className="signin-logo">
           <CircleLogoIcon />
@@ -96,6 +129,31 @@ export default function SignIn() {
           </button>
         </form>
       </div>
+
+      {showEula && (
+        <>
+          <div className="modal-overlay" onClick={() => setShowEula(false)} />
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            <h3 className="modal-title">Terms of Service</h3>
+            <div className="modal-content">
+              <p><strong>Acceptable Use Policy</strong></p>
+              <p>By using Circle, you agree that you will not post, share, or engage in any of the following:</p>
+              <ul>
+                <li>Harassing, bullying, or abusive content directed at any individual</li>
+                <li>Hate speech, discrimination, or content that demeans protected groups</li>
+                <li>Explicit sexual content or nudity</li>
+                <li>Violence, threats, or illegal activity</li>
+                <li>Spam, scams, or misleading information</li>
+                <li>Content that violates anyone's privacy or intellectual property rights</li>
+              </ul>
+              <p><strong>Content Moderation</strong></p>
+              <p>We are committed to maintaining a safe community. Circle includes tools to flag objectionable content and block abusive users. All reports are reviewed within 24 hours. Repeat violations will result in account suspension or termination.</p>
+            </div>
+            <button className="modal-btn modal-btn--primary" onClick={() => setShowEula(false)}>I Agree</button>
+          </div>
+        </>
+      )}
     </div>
   )
 }

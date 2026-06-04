@@ -25,6 +25,7 @@ export default function App() {
   const [localAvatar, setLocalAvatar] = useState(null)
   const [nudge, setNudge] = useState(null)
   const [members, setMembers] = useState([])
+  const [blockedUsers, setBlockedUsers] = useState([])
 
   // Auth listener — save profile to Firestore on sign-in
   useEffect(() => {
@@ -39,12 +40,14 @@ export default function App() {
           ...(u.photoURL ? { photoURL: u.photoURL } : {}),
         }, { merge: true })
         registerPushNotifications(u.uid)
+      } else {
+        setLocalAvatar(null)
       }
     })
     return () => { clearTimeout(timeout); unsub() }
   }, [])
 
-  // Load circle membership + nudges
+  // Load circle membership + nudges + blocked users
   useEffect(() => {
     if (!user) return
     const ref = doc(db, 'users', user.uid)
@@ -60,7 +63,8 @@ export default function App() {
       }
       if (data?.nudge) setNudge(data.nudge)
       else setNudge(null)
-      if (data?.photoURL) setLocalAvatar(data.photoURL)
+      setLocalAvatar(data?.photoURL || null)
+      setBlockedUsers(data?.blockedUsers || [])
     })
   }, [user])
 
@@ -233,6 +237,8 @@ export default function App() {
         sendNudge={sendNudge}
         members={members}
         deletePost={deletePost}
+        blockedUsers={blockedUsers}
+        onBlockUser={(userId) => setBlockedUsers([...blockedUsers, userId])}
       />
       <BottomNav active={tab} onNavigate={setTab} />
     </div>
