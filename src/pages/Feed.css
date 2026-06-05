@@ -388,6 +388,16 @@
   padding: 8px;
 }
 
+.modal-btn--danger {
+  background: #dc3545;
+  color: #fff;
+}
+
+.modal-btn--danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .feed-post-menu {
   position: absolute;
   top: 100%;

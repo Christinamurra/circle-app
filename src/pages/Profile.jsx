@@ -17,11 +17,13 @@ function buildCalendar(year, month) {
   return cells
 }
 
-export default function Profile({ avatar, setAvatar, posts = [], onNavigate, user, circle }) {
+export default function Profile({ avatar, setAvatar, posts = [], onNavigate, user, circle, deleteAccount }) {
   const today = new Date()
   const [calYear, setCalYear] = useState(today.getFullYear())
   const [calMonth, setCalMonth] = useState(today.getMonth())
   const [selectedPhoto, setSelectedPhoto] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const fileInputRef = useRef(null)
 
   const cells = buildCalendar(calYear, calMonth)
@@ -238,6 +240,17 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
         </div>
       </div>
 
+      <div className="profile-section profile-section--danger">
+        <h4 className="profile-section__title" style={{ color: '#C4614A' }}>DANGER ZONE</h4>
+        <button
+          className="btn-delete-account"
+          onClick={() => setShowDeleteModal(true)}
+          disabled={deleting}
+        >
+          Delete Account
+        </button>
+      </div>
+
       {selectedPhoto && (
         <div className="photo-lightbox" onClick={() => setSelectedPhoto(null)}>
           <button className="photo-lightbox__close">✕</button>
@@ -246,6 +259,38 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
             {new Date(selectedPhoto.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
+      )}
+
+      {showDeleteModal && (
+        <>
+          <div className="modal-overlay" onClick={() => !deleting && setShowDeleteModal(false)} />
+          <div className="modal-sheet">
+            <div className="modal-handle" />
+            <h3 className="modal-title">Delete Account</h3>
+            <p className="modal-sub">This will permanently delete your account, all your posts, and remove you from your circle. This cannot be undone.</p>
+            <button
+              className="modal-btn modal-btn--danger"
+              onClick={async () => {
+                setDeleting(true)
+                try {
+                  await deleteAccount()
+                } finally {
+                  setDeleting(false)
+                }
+              }}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : 'Delete Account'}
+            </button>
+            <button
+              className="modal-btn modal-btn--ghost"
+              onClick={() => setShowDeleteModal(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
       )}
     </div>
   )

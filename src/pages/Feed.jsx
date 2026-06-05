@@ -148,7 +148,12 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
   async function flagPost(post, reason) {
     if (!user) return
     try {
-      await addDoc(collection(db, 'reports'), {
+      await updateDoc(doc(db, 'users', user.uid), {
+        flagsMade: arrayUnion({ postId: post.id, reason, createdAt: new Date().toISOString() })
+      })
+      setShowModMenu(null)
+      alert('Thank you for reporting this content. Our team will review it within 24 hours.')
+      addDoc(collection(db, 'reports'), {
         postId: post.id,
         reportedUserId: post.userId,
         reporterUserId: user.uid,
@@ -156,9 +161,7 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
         postContent: post.photo ? 'Photo post' : 'Unknown',
         circleId: circle?.id,
         createdAt: new Date().toISOString()
-      })
-      alert('Thank you for reporting this content. Our team will review it within 24 hours.')
-      setShowModMenu(null)
+      }).catch(err => console.error('Report audit:', err))
     } catch (e) {
       console.error('Report failed:', e)
       alert('Could not submit report. Please try again.')
@@ -172,15 +175,15 @@ export default function Feed({ posts = [], onAddPost, goal, setGoal, circle, onN
       await updateDoc(doc(db, 'users', user.uid), {
         blockedUsers: arrayUnion(userId)
       })
-      await addDoc(collection(db, 'reports'), {
+      setShowModMenu(null)
+      alert(`You've blocked ${userName}. Their posts will no longer appear in your feed.`)
+      addDoc(collection(db, 'reports'), {
         type: 'block',
         blockedUserId: userId,
         blockerUserId: user.uid,
         circleId: circle?.id,
         createdAt: new Date().toISOString()
-      })
-      alert(`You've blocked ${userName}. Their posts will no longer appear in your feed.`)
-      setShowModMenu(null)
+      }).catch(err => console.error('Block audit:', err))
     } catch (e) {
       console.error('Block failed:', e)
       alert('Could not block user. Please try again.')

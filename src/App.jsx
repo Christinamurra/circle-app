@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { auth, db } from './firebase'
-import { onAuthStateChanged } from 'firebase/auth'
+import { auth, db, storage } from './firebase'
+import { onAuthStateChanged, deleteUser } from 'firebase/auth'
 import {
   doc, collection, onSnapshot, addDoc, setDoc,
   deleteDoc, query, where, orderBy, getDoc, getDocs, updateDoc, arrayUnion
 } from 'firebase/firestore'
+import { ref, deleteObject } from 'firebase/storage'
 import { registerPushNotifications } from './utils/pushNotifications'
 import Home from './pages/Home'
 import Feed from './pages/Feed'
@@ -163,6 +164,29 @@ export default function App() {
     }
   }
 
+  async function deleteAccount() {
+    if (!user) return
+    const uid = user.uid
+    try {
+      const postsQ = query(collection(db, 'posts'), where('userId', '==', uid))
+      const postSnaps = await getDocs(postsQ)
+      await Promise.all(postSnaps.docs.map(d => deleteDoc(doc(db, 'posts', d.id))))
+      await deleteDoc(doc(db, 'users', uid))
+      try {
+        await deleteObject(ref(storage, `avatars/${uid}.jpg`))
+      } catch (_) {}
+      await deleteUser(auth.currentUser)
+      setUser(null)
+      setCircleState(null)
+      setPosts([])
+      setGoalState(null)
+    } catch (e) {
+      console.error('Account deletion failed:', e)
+      alert('Could not delete account. Please try again.')
+      throw e
+    }
+  }
+
   if (user === undefined) {
     return (
       <div className="app-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -237,6 +261,7 @@ export default function App() {
         sendNudge={sendNudge}
         members={members}
         deletePost={deletePost}
+        deleteAccount={deleteAccount}
         blockedUsers={blockedUsers}
         onBlockUser={(userId) => setBlockedUsers([...blockedUsers, userId])}
       />
