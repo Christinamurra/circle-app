@@ -241,7 +241,6 @@ export default function Profile({ avatar, setAvatar, posts = [], onNavigate, use
       </div>
 
       <div className="profile-section profile-section--danger">
-        <h4 className="profile-section__title" style={{ color: '#C4614A' }}>DANGER ZONE</h4>
         <button
           className="btn-delete-account"
           onClick={() => setShowDeleteModal(true)}
