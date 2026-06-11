@@ -13,5 +13,9 @@
       "backgroundColor": "#F2EDE7",
       "showSpinner": false
     }
+  },
+  "server": {
+    "url": "https://circle-7ebf2.web.app",
+    "cleartext": false
   }
 }

@@ -6,6 +6,7 @@ import {
   deleteDoc, query, where, orderBy, getDoc, getDocs, updateDoc, arrayUnion
 } from 'firebase/firestore'
 import { ref, deleteObject } from 'firebase/storage'
+import { App as CapacitorApp } from '@capacitor/app'
 import { registerPushNotifications } from './utils/pushNotifications'
 import Home from './pages/Home'
 import Feed from './pages/Feed'
@@ -27,6 +28,32 @@ export default function App() {
   const [nudge, setNudge] = useState(null)
   const [members, setMembers] = useState([])
   const [blockedUsers, setBlockedUsers] = useState([])
+  const [pendingCode, setPendingCode] = useState(null)
+
+  // Handle deep links from invites
+  useEffect(() => {
+    const handleDeepLink = (e) => {
+      const url = e.url
+      if (url?.includes('/join/')) {
+        const code = url.split('/join/')[1]?.split('?')[0]
+        if (code) setPendingCode(code)
+      }
+    }
+
+    // Check URL on app launch
+    const url = new URL(window.location.href)
+    if (url.pathname.includes('/join/')) {
+      const code = url.pathname.split('/join/')[1]
+      if (code) setPendingCode(code)
+    }
+
+    // Listen for deep links from native
+    CapacitorApp.addListener('appUrlOpen', handleDeepLink)
+
+    return () => {
+      CapacitorApp.removeAllListeners()
+    }
+  }, [])
 
   // Auth listener — save profile to Firestore on sign-in
   useEffect(() => {
@@ -264,6 +291,8 @@ export default function App() {
         deleteAccount={deleteAccount}
         blockedUsers={blockedUsers}
         onBlockUser={(userId) => setBlockedUsers([...blockedUsers, userId])}
+        pendingCode={pendingCode}
+        clearPendingCode={() => setPendingCode(null)}
       />
       <BottomNav active={tab} onNavigate={setTab} />
     </div>

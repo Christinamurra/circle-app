@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { db, auth } from '../firebase'
 import { doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore'
 import LeafBanner from '../components/LeafBanner'
@@ -14,7 +14,7 @@ const MOCK_MEMBERS = [
   { uid: 'u4', name: 'Priya', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80' },
 ]
 
-export default function Circle({ circle, setCircle, user, sendNudge, posts = [], members = [] }) {
+export default function Circle({ circle, setCircle, user, sendNudge, posts = [], members = [], pendingCode, clearPendingCode }) {
   const [modal, setModal] = useState(null)
   const [name, setName] = useState('')
   const [joinCode, setJoinCode] = useState('')
@@ -24,6 +24,14 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [],
   const [error, setError] = useState('')
 
   const isCreator = circle && user && circle.createdBy === user.uid
+
+  // Auto-join if invited via deep link
+  useEffect(() => {
+    if (pendingCode && user && !circle) {
+      setJoinCode(pendingCode)
+      setModal('join')
+    }
+  }, [pendingCode, user, circle])
 
   async function handleRename() {
     if (!renameInput.trim() || !circle?.id) return
@@ -217,7 +225,7 @@ export default function Circle({ circle, setCircle, user, sendNudge, posts = [],
               </button>
             </div>
             <button className="circle-share-btn" onClick={() => {
-              const msg = `Join my circle "${circle.name}" on Circle — the accountability app! 💪\n\nDownload here: https://apps.apple.com/app/id6746823801\n\nUse code ${circle.code} to join my circle once you're in.`
+              const msg = `Join my circle "${circle.name}" on Circle! 💪\n\nhttps://circle-7ebf2.web.app/join/${circle.code}`
               if (navigator.share) {
                 navigator.share({ text: msg })
               } else {
