@@ -1,11 +1,5 @@
 {
   "applinks": {
-    "apps": [],
-    "details": [
-      {
-        "appID": "93X2663647.com.christinamurra.circle",
-        "paths": ["/join/*"]
-      }
-    ]
+    "apps": []
   }
 }
